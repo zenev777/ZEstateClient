@@ -1,0 +1,62 @@
+<div class="page-shell">
+  <div class="page-frame">
+    <div class="brand">ZEstate</div>
+    <h2 style="margin-bottom: 16px;">Създай сграда</h2>
+
+    @if (errorMessage()) {
+      <div class="alert alert-error" style="margin-bottom: 16px;">{{ errorMessage() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label>Аз живея в тази сграда</label>
+        <div class="seg" role="radiogroup">
+          <label class="seg-opt" [class.active]="form.controls.livesInBuilding.value === true">
+            <input type="radio" [checked]="form.controls.livesInBuilding.value === true" (change)="setLivesInBuilding(true)" />
+            Да
+          </label>
+          <label class="seg-opt" [class.active]="form.controls.livesInBuilding.value === false">
+            <input type="radio" [checked]="form.controls.livesInBuilding.value === false" (change)="setLivesInBuilding(false)" />
+            Не
+          </label>
+        </div>
+      </div>
+
+      <div class="field" [class.has-error]="form.controls.name.invalid && form.controls.name.touched">
+        <label for="name">Име на сградата</label>
+        <input id="name" class="input" formControlName="name" placeholder="Блок 12, Кв. Дружба" />
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+          <span class="field-error">Името на сградата е задължително.</span>
+        }
+      </div>
+
+      <div class="field" [class.has-error]="form.controls.address.invalid && form.controls.address.touched">
+        <label for="address">Адрес</label>
+        <input id="address" class="input" formControlName="address" placeholder="ул. Малиновски 12, София" />
+        @if (form.controls.address.invalid && form.controls.address.touched) {
+          <span class="field-error">Адресът е задължителен.</span>
+        }
+      </div>
+
+      @if (form.controls.livesInBuilding.value) {
+        <div class="form-row">
+          <div class="field">
+            <label for="apartmentNumber">Номер на апартамент</label>
+            <input id="apartmentNumber" class="input" formControlName="apartmentNumber" placeholder="12" />
+          </div>
+          <div class="field">
+            <label for="floor">Етаж</label>
+            <input id="floor" class="input" type="number" formControlName="floor" placeholder="4" />
+          </div>
+        </div>
+        <p class="text-muted" style="font-size: 12.5px; margin: 0 0 16px;">
+          Идеални части и бюджет на апартамента се настройват по-късно от домоуправителя.
+        </p>
+      }
+
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+        {{ submitting() ? 'Създаване…' : 'Създай сграда' }}
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="page-shell">
+  <div class="page-frame">
+    <div class="brand">ZEstate</div>
+    <h2 style="margin-bottom: 16px;">Регистрация · Живущ</h2>
+
+    @if (loadingBuilding()) {
+      <p class="text-muted">Зареждане на данни за сградата…</p>
+    } @else {
+      @if (building(); as b) {
+        <div class="card" style="margin-bottom: 16px;">
+          <span class="tag tag-accent">Код валиден</span>
+          <p style="margin: 0; font-size: 13.5px;">{{ b.name }} — {{ b.address }}</p>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="alert alert-error" style="margin-bottom: 16px;">{{ errorMessage() }}</div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="form-row">
+          <div class="field" [class.has-error]="form.controls.firstName.invalid && form.controls.firstName.touched">
+            <label for="firstName">Име</label>
+            <input id="firstName" class="input" formControlName="firstName" placeholder="Мария" />
+          </div>
+          <div class="field" [class.has-error]="form.controls.lastName.invalid && form.controls.lastName.touched">
+            <label for="lastName">Фамилия</label>
+            <input id="lastName" class="input" formControlName="lastName" placeholder="Петрова" />
+          </div>
+        </div>
+
+        <div class="field" [class.has-error]="form.controls.email.invalid && form.controls.email.touched">
+          <label for="email">Имейл</label>
+          <input id="email" class="input" type="email" formControlName="email" placeholder="maria.petrova@email.bg" />
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="phoneNumber">Телефон</label>
+            <input id="phoneNumber" class="input" type="tel" formControlName="phoneNumber" placeholder="+359 88 123 4567" />
+          </div>
+          <div class="field" [class.has-error]="form.controls.password.invalid && form.controls.password.touched">
+            <label for="password">Парола</label>
+            <input id="password" class="input" type="password" formControlName="password" placeholder="••••••••" />
+          </div>
+        </div>
+
+        <div class="field" [class.has-error]="form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched">
+          <label for="confirmPassword">Потвърди парола</label>
+          <input id="confirmPassword" class="input" type="password" formControlName="confirmPassword" placeholder="••••••••" />
+          @if (form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched) {
+            <span class="field-error">Паролите не съвпадат.</span>
+          }
+        </div>
+
+        <div class="field" [class.has-error]="form.controls.apartmentNumber.invalid && form.controls.apartmentNumber.touched">
+          <label for="apartmentNumber">Апартамент №</label>
+          <input id="apartmentNumber" class="input" formControlName="apartmentNumber" placeholder="12" />
+        </div>
+
+        <div class="field">
+          <label>Статут</label>
+          <div style="display: flex; gap: 16px;">
+            <label class="radio">
+              <input type="radio" [checked]="form.controls.status.value === 'Owner'" (change)="setStatus('Owner')" />
+              <span class="dot"></span>Собственик
+            </label>
+            <label class="radio">
+              <input type="radio" [checked]="form.controls.status.value === 'Resident'" (change)="setStatus('Resident')" />
+              <span class="dot"></span>Живущ (наемател)
+            </label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="notes">Бележка (по избор)</label>
+          <textarea id="notes" class="input" rows="3" formControlName="notes"
+                    placeholder="Допълнителна информация за домоуправителя…"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="submitting()">
+          {{ submitting() ? 'Изпращане…' : 'Изпрати заявка' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

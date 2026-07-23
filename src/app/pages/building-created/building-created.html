@@ -1,0 +1,23 @@
+<div class="page-shell">
+  <div class="page-frame" style="text-align: center;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-accent);">
+        <path d="M21.801 10A10 10 0 1 1 17 3.335"></path>
+        <path d="m9 11 3 3L22 4"></path>
+      </svg>
+      <h3 style="margin: 0;">Сградата е създадена</h3>
+      <p class="text-muted" style="margin: 0;">Сподели този код с живущите, за да се присъединят.</p>
+
+      <div class="code-box" style="width: 100%; margin-top: 8px;">{{ inviteCode() }}</div>
+
+      <div style="display: flex; gap: 8px; width: 100%;">
+        <button type="button" class="btn btn-secondary" style="flex: 1;" (click)="copyCode()">
+          {{ copied() ? 'Копирано' : 'Копирай' }}
+        </button>
+      </div>
+
+      <a routerLink="/dashboard" class="btn btn-primary btn-block">Към таблото</a>
+    </div>
+  </div>
+</div>

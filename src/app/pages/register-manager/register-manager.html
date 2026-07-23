@@ -1,0 +1,67 @@
+<div class="page-shell">
+  <div class="page-frame">
+    <div class="brand">ZEstate</div>
+
+    <h2 style="margin-bottom: 2px;">Регистрация · Домоуправител</h2>
+    <p class="text-muted" style="margin: 0 0 20px;">Създай акаунт, за да управляваш сграда.</p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-row">
+        <div class="field" [class.has-error]="form.controls.firstName.invalid && form.controls.firstName.touched">
+          <label for="firstName">Име</label>
+          <input id="firstName" class="input" formControlName="firstName" placeholder="Иван" />
+          @if (form.controls.firstName.invalid && form.controls.firstName.touched) {
+            <span class="field-error">Името е задължително.</span>
+          }
+        </div>
+        <div class="field" [class.has-error]="form.controls.lastName.invalid && form.controls.lastName.touched">
+          <label for="lastName">Фамилия</label>
+          <input id="lastName" class="input" formControlName="lastName" placeholder="Петров" />
+          @if (form.controls.lastName.invalid && form.controls.lastName.touched) {
+            <span class="field-error">Фамилията е задължителна.</span>
+          }
+        </div>
+      </div>
+
+      <div class="field" [class.has-error]="form.controls.email.invalid && form.controls.email.touched">
+        <label for="email">Имейл</label>
+        <input id="email" class="input" type="email" formControlName="email" placeholder="ivan.petrov@email.bg" />
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+          <span class="field-error">Въведи валиден имейл.</span>
+        }
+      </div>
+
+      <div class="field" [class.has-error]="form.controls.phoneNumber.invalid && form.controls.phoneNumber.touched">
+        <label for="phoneNumber">Телефон</label>
+        <input id="phoneNumber" class="input" type="tel" formControlName="phoneNumber" placeholder="+359 88 123 4567" />
+        @if (form.controls.phoneNumber.invalid && form.controls.phoneNumber.touched) {
+          <span class="field-error">Въведи валиден телефонен номер.</span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="field" [class.has-error]="form.controls.password.invalid && form.controls.password.touched">
+          <label for="password">Парола</label>
+          <input id="password" class="input" type="password" formControlName="password" placeholder="••••••••" />
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <span class="field-error">Минимум 6 символа.</span>
+          }
+        </div>
+        <div class="field" [class.has-error]="form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched">
+          <label for="confirmPassword">Потвърди парола</label>
+          <input id="confirmPassword" class="input" type="password" formControlName="confirmPassword" placeholder="••••••••" />
+          @if (form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched) {
+            <span class="field-error">Паролите не съвпадат.</span>
+          }
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">Продължи към създаване на сграда</button>
+
+      <div style="display: flex; flex-direction: column; gap: 6px; text-align: center; margin-top: 12px;">
+        <span style="font-size: 13px;">Живущ си и имаш код? <a routerLink="/login">Въведи го тук</a></span>
+        <span style="font-size: 13px;">Вече имаш акаунт? <a routerLink="/login">Влез</a></span>
+      </div>
+    </form>
+  </div>
+</div>
