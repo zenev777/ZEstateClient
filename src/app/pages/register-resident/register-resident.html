@@ -39,16 +39,21 @@
             <label for="phoneNumber">Телефон</label>
             <input id="phoneNumber" class="input" type="tel" formControlName="phoneNumber" placeholder="+359 88 123 4567" />
           </div>
-          <div class="field" [class.has-error]="form.controls.password.invalid && form.controls.password.touched">
+          <div class="field" [class.has-error]="form.controls.password.invalid && (form.controls.password.dirty || form.controls.password.touched)">
             <label for="password">Парола</label>
             <input id="password" class="input" type="password" formControlName="password" placeholder="••••••••" />
+            @if (form.controls.password.invalid && (form.controls.password.dirty || form.controls.password.touched)) {
+              <span class="field-error">Минимум 6 символа.</span>
+            } @else {
+              <span class="field-hint">Минимум 6 символа.</span>
+            }
           </div>
         </div>
 
-        <div class="field" [class.has-error]="form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched">
+        <div class="field" [class.has-error]="form.hasError('passwordsMismatch') && (form.controls.confirmPassword.dirty || form.controls.confirmPassword.touched)">
           <label for="confirmPassword">Потвърди парола</label>
           <input id="confirmPassword" class="input" type="password" formControlName="confirmPassword" placeholder="••••••••" />
-          @if (form.hasError('passwordsMismatch') && form.controls.confirmPassword.touched) {
+          @if (form.hasError('passwordsMismatch') && (form.controls.confirmPassword.dirty || form.controls.confirmPassword.touched)) {
             <span class="field-error">Паролите не съвпадат.</span>
           }
         </div>

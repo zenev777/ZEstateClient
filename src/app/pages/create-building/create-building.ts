@@ -1,14 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { RegistrationWizardService } from '../../core/services/registration-wizard.service';
+import { SessionService } from '../../core/services/session.service';
 import { RegisterRequest } from '../../core/models/auth.models';
 
 @Component({
   selector: 'app-create-building',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './create-building.html',
 })
 export class CreateBuilding implements OnInit {
@@ -16,6 +17,7 @@ export class CreateBuilding implements OnInit {
   private readonly router = inject(Router);
   private readonly wizard = inject(RegistrationWizardService);
   private readonly authService = inject(AuthService);
+  private readonly session = inject(SessionService);
 
   readonly submitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -74,6 +76,7 @@ export class CreateBuilding implements OnInit {
 
     this.authService.register(request).subscribe({
       next: (response) => {
+        this.session.save(response);
         this.wizard.setManagerResult(response);
         this.router.navigateByUrl('/register/manager/success');
       },

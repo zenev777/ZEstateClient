@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, BuildingSummary, RegisterRequest } from '../models/auth.models';
+import { AuthResponse, BuildingSummary, LoginRequest, RegisterRequest } from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -13,6 +13,12 @@ export class AuthService {
   register(request: RegisterRequest): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.baseUrl}/auth/register`, request)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  login(request: LoginRequest): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.baseUrl}/auth/login`, request)
       .pipe(catchError(this.rethrowWithMessage));
   }
 

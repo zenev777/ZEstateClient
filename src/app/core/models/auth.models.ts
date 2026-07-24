@@ -16,6 +16,22 @@ export interface JoinBuildingRequest {
   notes?: string | null;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface JoinRequestSummary {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  apartmentNumber: string;
+  requestedRole: number;
+  notes: string | null;
+  createdAt: string;
+}
+
 export interface RegisterRequest {
   firstName: string;
   lastName: string;

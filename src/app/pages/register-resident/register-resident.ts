@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { RegistrationWizardService } from '../../core/services/registration-wizard.service';
 import { BuildingSummary, RegisterRequest, ResidentStatus } from '../../core/models/auth.models';
@@ -9,7 +9,7 @@ import { passwordsMatchValidator } from '../../shared/validators';
 @Component({
   selector: 'app-register-resident',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './register-resident.html',
 })
 export class RegisterResident implements OnInit {

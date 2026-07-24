@@ -1,11 +1,69 @@
 <div class="page-shell">
-  <div class="page-frame">
-    <div class="brand">ZEstate</div>
+  <div class="page-frame" style="max-width: 560px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+      <div class="brand" style="margin-bottom: 0;">ZEstate</div>
+      <button type="button" class="btn btn-ghost" (click)="logout()">Изход</button>
+    </div>
+
     <h2 style="margin-bottom: 4px;">Одобрения</h2>
-    <p class="text-muted" style="margin: 0 0 20px;">Чакащи заявки за присъединяване към сградата.</p>
-    <p class="text-muted" style="text-align: center; padding: 40px 0;">
-      Таблото с одобрения предстои да бъде разработено.
+    <p class="text-muted" style="margin: 0 0 20px;">
+      @if (managerName) {
+        Здравей, {{ managerName }} — чакащи заявки за присъединяване към сградата.
+      } @else {
+        Чакащи заявки за присъединяване към сградата.
+      }
     </p>
-    <a routerLink="/" class="btn btn-secondary btn-block">Към началото</a>
+
+    @if (loading()) {
+      <p class="text-muted" style="text-align: center; padding: 40px 0;">Зареждане…</p>
+    } @else if (errorMessage()) {
+      <div class="alert alert-error">{{ errorMessage() }}</div>
+    } @else if (requests().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 40px 0;">Няма чакащи заявки.</p>
+    } @else {
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        @for (item of requests(); track item.id) {
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <div>
+                <div class="card-title">{{ item.name }}</div>
+                <div class="card-meta" style="margin-top: 4px;">Апартамент {{ item.apartmentNumber }}</div>
+              </div>
+              <span class="tag" [class.tag-accent]="item.requestedRole === 0" [class.tag-neutral]="item.requestedRole !== 0">
+                {{ roleLabel(item.requestedRole) }}
+              </span>
+            </div>
+            <div class="card-meta">
+              <span>{{ item.email }}@if (item.phone) { &middot; {{ item.phone }} }</span>
+            </div>
+            @if (item.notes) {
+              <p class="card-body" style="font-style: italic;">{{ item.notes }}</p>
+            }
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button
+                type="button"
+                class="btn btn-secondary btn-icon icon-btn-approve"
+                aria-label="Одобри"
+                [disabled]="actioningId() === item.id"
+                (click)="approve(item.id)"
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary btn-icon icon-btn-reject"
+                aria-label="Отхвърли"
+                [disabled]="actioningId() === item.id"
+                (click)="reject(item.id)"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <a routerLink="/" class="btn btn-secondary btn-block" style="margin-top: 20px;">Към началото</a>
   </div>
 </div>
