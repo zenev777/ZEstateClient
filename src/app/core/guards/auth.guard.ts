@@ -6,7 +6,7 @@ export const authGuard: CanActivateFn = () => {
   const session = inject(SessionService);
   const router = inject(Router);
 
-  if (session.isLoggedIn() && session.hasRole('HouseManager')) {
+  if (session.isLoggedIn()) {
     return true;
   }
 

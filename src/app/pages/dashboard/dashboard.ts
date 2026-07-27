@@ -1,13 +1,24 @@
+import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BuildingService } from '../../core/services/building.service';
 import { SessionService } from '../../core/services/session.service';
 import { JoinRequestSummary } from '../../core/models/auth.models';
 
+interface MockRepair {
+  title: string;
+  status: 'Planned' | 'InProgress';
+}
+
+interface MockMeeting {
+  title: string;
+  date: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, DecimalPipe],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -16,13 +27,32 @@ export class Dashboard implements OnInit {
   private readonly router = inject(Router);
 
   readonly managerName = this.session.getName();
+  readonly isManager = this.session.hasRole('HouseManager');
+
+  // Mocked — no balances/repairs/meetings API yet.
+  readonly bankBalance = 3240.5;
+  readonly cashBalance = 180;
+  readonly dueAmount = 45;
+  readonly duePeriod = 'юли 2026';
+
+  readonly repairs: MockRepair[] = [
+    { title: 'Смяна на асансьорен мотор', status: 'InProgress' },
+    { title: 'Пребоядисване на стълбище', status: 'Planned' },
+  ];
+
+  readonly meetings: MockMeeting[] = [{ title: 'Годишно общо събрание', date: '15 август 2026, 18:00' }];
+
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly requests = signal<JoinRequestSummary[]>([]);
   readonly actioningId = signal<number | null>(null);
 
   ngOnInit(): void {
-    this.load();
+    if (this.isManager) {
+      this.load();
+    } else {
+      this.loading.set(false);
+    }
   }
 
   load(): void {
@@ -39,6 +69,10 @@ export class Dashboard implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  repairStatusLabel(status: MockRepair['status']): string {
+    return status === 'InProgress' ? 'В процес' : 'Планиран';
   }
 
   roleLabel(role: number): string {

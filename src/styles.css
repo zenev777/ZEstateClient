@@ -199,3 +199,28 @@ textarea.input { min-height: 90px; resize: vertical; }
   display: flex; align-items: center; gap: 8px; margin-bottom: var(--space-6);
   color: var(--color-accent);
 }
+
+/* — dashboard stat tiles & feature grid — */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.stat-tile {
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-accent); color: #fff;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-tile.stat-tile-alt { background: var(--color-accent-2); }
+.stat-tile-label { font-size: 12px; opacity: 0.85; }
+.stat-tile-value { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 26px; }
+
+.section-title {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: var(--space-6) 0 var(--space-2);
+}
+.section-title h3 { margin: 0; }
+
+.feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+@media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
+.feature-card { min-height: 100%; }
+.feature-empty { font-size: 13px; color: color-mix(in srgb, var(--color-text) 50%, transparent); margin: 0; }
+.feature-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.feature-list li { display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.feature-list .meta { font-size: 12px; color: color-mix(in srgb, var(--color-text) 55%, transparent); }

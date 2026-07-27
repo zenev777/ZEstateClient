@@ -43,7 +43,7 @@ export class InviteCode {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: (response) => {
         this.session.save(response);
-        this.router.navigateByUrl(response.roles.includes('HouseManager') ? '/dashboard' : '/');
+        this.router.navigateByUrl('/dashboard');
       },
       error: (err: Error) => {
         this.loggingIn.set(false);
