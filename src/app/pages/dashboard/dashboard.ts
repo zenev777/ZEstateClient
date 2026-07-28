@@ -1,9 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { BuildingService } from '../../core/services/building.service';
 import { SessionService } from '../../core/services/session.service';
-import { JoinRequestSummary } from '../../core/models/auth.models';
+import { JoinRequestSummary, MeResponse } from '../../core/models/auth.models';
 
 interface MockRepair {
   title: string;
@@ -22,6 +23,7 @@ interface MockMeeting {
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
+  private readonly authService = inject(AuthService);
   private readonly buildingService = inject(BuildingService);
   private readonly session = inject(SessionService);
   private readonly router = inject(Router);
@@ -47,12 +49,29 @@ export class Dashboard implements OnInit {
   readonly requests = signal<JoinRequestSummary[]>([]);
   readonly actioningId = signal<number | null>(null);
 
+  readonly meLoading = signal(true);
+  readonly me = signal<MeResponse | null>(null);
+
   ngOnInit(): void {
     if (this.isManager) {
+      this.meLoading.set(false);
       this.load();
     } else {
-      this.loading.set(false);
+      this.loadMe();
     }
+  }
+
+  loadMe(): void {
+    this.meLoading.set(true);
+    this.authService.me().subscribe({
+      next: (me) => {
+        this.me.set(me);
+        this.meLoading.set(false);
+      },
+      error: () => {
+        this.meLoading.set(false);
+      },
+    });
   }
 
   load(): void {

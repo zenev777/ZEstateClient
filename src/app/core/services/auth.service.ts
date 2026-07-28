@@ -2,7 +2,14 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, BuildingSummary, LoginRequest, RegisterRequest } from '../models/auth.models';
+import {
+  AuthResponse,
+  BuildingSummary,
+  JoinBuildingRequest,
+  LoginRequest,
+  MeResponse,
+  RegisterRequest,
+} from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -25,6 +32,16 @@ export class AuthService {
   getBuildingByCode(code: string): Observable<BuildingSummary> {
     return this.http
       .get<BuildingSummary>(`${this.baseUrl}/auth/building-by-code/${encodeURIComponent(code)}`)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  me(): Observable<MeResponse> {
+    return this.http.get<MeResponse>(`${this.baseUrl}/auth/me`).pipe(catchError(this.rethrowWithMessage));
+  }
+
+  resubmitJoinRequest(request: JoinBuildingRequest): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/resubmit-join-request`, request)
       .pipe(catchError(this.rethrowWithMessage));
   }
 
