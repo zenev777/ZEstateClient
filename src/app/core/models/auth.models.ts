@@ -68,3 +68,13 @@ export interface ManagerPersonalInfo {
   password: string;
   confirmPassword: string;
 }
+
+export type MembershipStatus = 'None' | 'Pending' | 'Approved' | 'Rejected';
+
+export interface MeResponse {
+  role: UserRole;
+  membershipStatus?: MembershipStatus;
+  buildingName?: string | null;
+  apartmentNumber?: string | null;
+  canRetry?: boolean;
+}
