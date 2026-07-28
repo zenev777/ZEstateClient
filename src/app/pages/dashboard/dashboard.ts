@@ -4,11 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BuildingService } from '../../core/services/building.service';
 import { SessionService } from '../../core/services/session.service';
+import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 import { JoinRequestSummary, MeResponse } from '../../core/models/auth.models';
 
 interface MockRepair {
   title: string;
   status: 'Planned' | 'InProgress';
+  progress: number;
 }
 
 interface MockMeeting {
@@ -16,10 +18,16 @@ interface MockMeeting {
   date: string;
 }
 
+interface MockDue {
+  title: string;
+  amount: number;
+  dueDate: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink, DecimalPipe, BottomNav],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
@@ -32,17 +40,22 @@ export class Dashboard implements OnInit {
   readonly isManager = this.session.hasRole('HouseManager');
 
   // Mocked — no balances/repairs/meetings API yet.
-  readonly bankBalance = 3240.5;
-  readonly cashBalance = 180;
-  readonly dueAmount = 45;
-  readonly duePeriod = 'юли 2026';
+  readonly bankBalance = 4820.55;
+  readonly cashBalance = 312.4;
+  readonly monthlyIncome = 1240;
+  readonly monthlyExpense = 685;
 
-  readonly repairs: MockRepair[] = [
-    { title: 'Смяна на асансьорен мотор', status: 'InProgress' },
-    { title: 'Пребоядисване на стълбище', status: 'Planned' },
+  readonly dues: MockDue[] = [
+    { title: 'Месечна вноска — Ноември', amount: 42, dueDate: 'до 30 ноем.' },
+    { title: 'Фонд Ремонт', amount: 15, dueDate: 'до 05 дек.' },
   ];
 
-  readonly meetings: MockMeeting[] = [{ title: 'Годишно общо събрание', date: '15 август 2026, 18:00' }];
+  readonly repairs: MockRepair[] = [
+    { title: 'Ремонт на асансьор', status: 'InProgress', progress: 60 },
+    { title: 'Боядисване на входа', status: 'Planned', progress: 10 },
+  ];
+
+  readonly meetings: MockMeeting[] = [{ title: 'Общо събрание', date: 'Пет, 29 ноем. · 19:00' }];
 
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
