@@ -1,24 +1,87 @@
 <div class="page-shell">
-  <div class="page-frame" style="text-align: center;">
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0;">
-      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-           stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-accent);">
-        <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
-        <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
-        <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
-        <path d="M10 6h4"></path>
-        <path d="M10 10h4"></path>
-        <path d="M10 14h4"></path>
-        <path d="M10 18h4"></path>
-      </svg>
-      <h1 style="margin: 0;">ZEstate</h1>
-      <p class="text-muted" style="max-width: 34ch; margin: 0 0 8px;">
-        Платформа за управление на етажна собственост
-      </p>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-        <a routerLink="/register/manager" class="btn btn-primary">Регистрация</a>
-        <a routerLink="/login" class="btn btn-secondary">Вход</a>
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <div class="app-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+            <path d="M10 6h4M10 10h4M10 14h4M10 18h4"></path>
+          </svg>
+        </div>
+        <span class="app-title">ZEstate</span>
       </div>
     </div>
+
+    <span class="badge">За домоуправители и собственици</span>
+    <h1 style="margin-top: 14px;">Управлението на входа — лесно и ясно</h1>
+    <p class="text-muted" style="max-width: 42ch;">
+      Всичко за вашата етажна собственост на едно място: такси, събрания, ремонти, документи и комуникация.
+    </p>
+
+    <div class="hero-cta">
+      <a routerLink="/register/manager" class="btn btn-primary btn-block">Регистрация</a>
+      <a routerLink="/login" class="btn btn-secondary btn-block">Вход</a>
+    </div>
+
+    <div class="list-stack">
+      <div class="card" style="flex-direction: row; align-items: flex-start;">
+        <div class="icon-box icon-box-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Такси и плащания</div>
+          <p class="card-body" style="margin-top: 4px;">Автоматично генериране на месечни задължения и онлайн плащания.</p>
+        </div>
+      </div>
+
+      <div class="card" style="flex-direction: row; align-items: flex-start;">
+        <div class="icon-box icon-box-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Гласувания и събрания</div>
+          <p class="card-body" style="margin-top: 4px;">Свиквайте общи събрания и гласувайте решения онлайн.</p>
+        </div>
+      </div>
+
+      <div class="card" style="flex-direction: row; align-items: flex-start;">
+        <div class="icon-box icon-box-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Ремонти</div>
+          <p class="card-body" style="margin-top: 4px;">Проследяване на статус и прогрес на текущите ремонти в сградата.</p>
+        </div>
+      </div>
+
+      <div class="card" style="flex-direction: row; align-items: flex-start;">
+        <div class="icon-box icon-box-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Известия</div>
+          <p class="card-body" style="margin-top: 4px;">Email и in-app известия за нови такси, събрания и просрочия.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-card" style="margin-top: var(--space-6);">
+      <h3>Готови ли сте да опростите управлението?</h3>
+      <p>Създайте входа за минути и поканете съседите с един код.</p>
+      <a routerLink="/register/manager" class="btn btn-light">Създай вход</a>
+    </div>
+
+    <p class="footer-note">© 2026 ZEstate. Всички права запазени.</p>
   </div>
 </div>
