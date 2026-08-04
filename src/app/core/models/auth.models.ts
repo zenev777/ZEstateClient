@@ -59,6 +59,30 @@ export interface BuildingSummary {
   inviteCode: string;
 }
 
+export interface UpdateBuildingRequest {
+  name: string;
+  address: string;
+}
+
+export interface ApartmentSummary {
+  id: number;
+  number: string;
+  floor: number;
+  idealParts: number;
+  budget: number;
+}
+
+export interface ApartmentListResponse {
+  apartments: ApartmentSummary[];
+  idealPartsTotal: number;
+}
+
+export interface ApartmentFormRequest {
+  number: string;
+  floor: number;
+  idealParts: number;
+}
+
 /** Personal-info step held in memory while the house-manager wizard collects the building step. */
 export interface ManagerPersonalInfo {
   firstName: string;
