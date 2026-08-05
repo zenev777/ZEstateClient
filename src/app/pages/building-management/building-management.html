@@ -1,0 +1,136 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Сграда и апартаменти</div>
+          <div class="app-subtitle">Управление на данните за входа</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label"><span>Данни за сградата</span></div>
+    @if (buildingLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else {
+      <div class="card">
+        @if (buildingError()) {
+          <div class="alert alert-error">{{ buildingError() }}</div>
+        }
+        <form [formGroup]="buildingForm" (ngSubmit)="saveBuilding()" novalidate>
+          <div class="field" [class.has-error]="buildingForm.controls.name.invalid && buildingForm.controls.name.touched">
+            <label for="buildingName">Име на сградата</label>
+            <input id="buildingName" class="input" formControlName="name" />
+            @if (buildingForm.controls.name.invalid && buildingForm.controls.name.touched) {
+              <span class="field-error">Името на сградата е задължително.</span>
+            }
+          </div>
+          <div class="field" [class.has-error]="buildingForm.controls.address.invalid && buildingForm.controls.address.touched">
+            <label for="buildingAddress">Адрес</label>
+            <input id="buildingAddress" class="input" formControlName="address" />
+            @if (buildingForm.controls.address.invalid && buildingForm.controls.address.touched) {
+              <span class="field-error">Адресът е задължителен.</span>
+            }
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" [disabled]="buildingSaving()">
+            {{ buildingSaving() ? 'Запазване…' : 'Запази промените' }}
+          </button>
+          @if (buildingSaved()) {
+            <p class="field-hint" style="text-align: center; margin-top: 8px;">Промените са запазени.</p>
+          }
+        </form>
+      </div>
+    }
+
+    <div class="section-title">
+      <h3>Апартаменти</h3>
+      @if (!formOpen()) {
+        <button type="button" class="btn btn-secondary btn-sm" (click)="startCreate()">+ Апартамент</button>
+      }
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-3);">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="card-meta">Разпределени идеални части</span>
+        <span style="font-weight: 700;">{{ idealPartsTotal() | number: '1.0-2' }}% / 100%</span>
+      </div>
+      <div class="progress"><span [style.width.%]="idealPartsTotal()"></span></div>
+    </div>
+
+    @if (formOpen()) {
+      <div class="card" style="margin-bottom: var(--space-3);">
+        @if (formError()) {
+          <div class="alert alert-error">{{ formError() }}</div>
+        }
+        <form [formGroup]="apartmentForm" (ngSubmit)="submitApartment()" novalidate>
+          <div class="form-row">
+            <div class="field" [class.has-error]="apartmentForm.controls.number.invalid && apartmentForm.controls.number.touched">
+              <label for="apartmentNumber">Номер</label>
+              <input id="apartmentNumber" class="input" formControlName="number" />
+            </div>
+            <div class="field">
+              <label for="apartmentFloor">Етаж</label>
+              <input id="apartmentFloor" class="input" type="number" formControlName="floor" />
+            </div>
+          </div>
+          <div class="field" [class.has-error]="apartmentForm.controls.idealParts.invalid && apartmentForm.controls.idealParts.touched">
+            <label for="apartmentIdealParts">Идеални части (%)</label>
+            <input id="apartmentIdealParts" class="input" type="number" step="0.01" formControlName="idealParts" />
+            @if (apartmentForm.controls.idealParts.invalid && apartmentForm.controls.idealParts.touched) {
+              <span class="field-error">Стойността трябва да е между 0 и 100.</span>
+            }
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;" [disabled]="formSubmitting()">
+              {{ formSubmitting() ? 'Запазване…' : (editingId() ? 'Запази' : 'Добави') }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="cancelForm()">Отказ</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (apartmentsError()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ apartmentsError() }}</div>
+    }
+
+    @if (apartmentsLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (apartments().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма добавени апартаменти.</p>
+    } @else {
+      <div class="list-stack">
+        @for (apartment of apartments(); track apartment.id) {
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <div>
+                <div class="card-title">Апартамент {{ apartment.number }}</div>
+                <div class="card-meta" style="margin-top: 4px;">Етаж {{ apartment.floor }} &middot; {{ apartment.idealParts | number: '1.0-2' }}% идеални части</div>
+              </div>
+              <span class="tag tag-accent">{{ apartment.budget | number: '1.2-2' }} лв.</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(apartment)">Редакция</button>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm icon-btn-reject"
+                [disabled]="deletingId() === apartment.id"
+                (click)="deleteApartment(apartment)"
+              >
+                Изтрий
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />

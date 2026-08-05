@@ -50,5 +50,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/reapply/reapply').then((m) => m.Reapply),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/building',
+    loadComponent: () =>
+      import('./pages/building-management/building-management').then((m) => m.BuildingManagement),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

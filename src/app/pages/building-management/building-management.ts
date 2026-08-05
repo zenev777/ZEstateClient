@@ -1,0 +1,180 @@
+import { DecimalPipe } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { BuildingService } from '../../core/services/building.service';
+import { ApartmentSummary } from '../../core/models/auth.models';
+import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
+
+@Component({
+  selector: 'app-building-management',
+  standalone: true,
+  imports: [ReactiveFormsModule, DecimalPipe, BottomNav],
+  templateUrl: './building-management.html',
+})
+export class BuildingManagement implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly buildingService = inject(BuildingService);
+
+  readonly buildingLoading = signal(true);
+  readonly buildingSaving = signal(false);
+  readonly buildingError = signal<string | null>(null);
+  readonly buildingSaved = signal(false);
+
+  readonly apartmentsLoading = signal(true);
+  readonly apartments = signal<ApartmentSummary[]>([]);
+  readonly idealPartsTotal = signal(0);
+  readonly apartmentsError = signal<string | null>(null);
+
+  readonly formOpen = signal(false);
+  readonly editingId = signal<number | null>(null);
+  readonly formSubmitting = signal(false);
+  readonly formError = signal<string | null>(null);
+  readonly deletingId = signal<number | null>(null);
+
+  readonly buildingForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    address: ['', [Validators.required, Validators.maxLength(200)]],
+  });
+
+  readonly apartmentForm = this.fb.nonNullable.group({
+    number: ['', [Validators.required, Validators.maxLength(10)]],
+    floor: [0, [Validators.required]],
+    idealParts: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+  });
+
+  ngOnInit(): void {
+    this.loadBuilding();
+    this.loadApartments();
+  }
+
+  back(): void {
+    this.router.navigateByUrl('/dashboard');
+  }
+
+  loadBuilding(): void {
+    this.buildingLoading.set(true);
+    this.buildingService.getMyBuilding().subscribe({
+      next: (building) => {
+        this.buildingForm.patchValue({ name: building.name, address: building.address });
+        this.buildingLoading.set(false);
+      },
+      error: (err: Error) => {
+        this.buildingError.set(err.message);
+        this.buildingLoading.set(false);
+      },
+    });
+  }
+
+  loadApartments(): void {
+    this.apartmentsLoading.set(true);
+    this.apartmentsError.set(null);
+    this.buildingService.getApartments().subscribe({
+      next: (res) => {
+        this.apartments.set(res.apartments);
+        this.idealPartsTotal.set(res.idealPartsTotal);
+        this.apartmentsLoading.set(false);
+      },
+      error: (err: Error) => {
+        this.apartmentsError.set(err.message);
+        this.apartmentsLoading.set(false);
+      },
+    });
+  }
+
+  saveBuilding(): void {
+    if (this.buildingForm.invalid) {
+      this.buildingForm.markAllAsTouched();
+      return;
+    }
+
+    this.buildingSaving.set(true);
+    this.buildingError.set(null);
+    this.buildingSaved.set(false);
+
+    this.buildingService.updateMyBuilding(this.buildingForm.getRawValue()).subscribe({
+      next: () => {
+        this.buildingSaving.set(false);
+        this.buildingSaved.set(true);
+      },
+      error: (err: Error) => {
+        this.buildingSaving.set(false);
+        this.buildingError.set(err.message);
+      },
+    });
+  }
+
+  startCreate(): void {
+    this.editingId.set(null);
+    this.apartmentForm.reset({ number: '', floor: 0, idealParts: 0 });
+    this.formError.set(null);
+    this.formOpen.set(true);
+  }
+
+  startEdit(apartment: ApartmentSummary): void {
+    this.editingId.set(apartment.id);
+    this.apartmentForm.reset({
+      number: apartment.number,
+      floor: apartment.floor,
+      idealParts: apartment.idealParts,
+    });
+    this.formError.set(null);
+    this.formOpen.set(true);
+  }
+
+  cancelForm(): void {
+    this.formOpen.set(false);
+    this.editingId.set(null);
+    this.formError.set(null);
+  }
+
+  submitApartment(): void {
+    if (this.apartmentForm.invalid) {
+      this.apartmentForm.markAllAsTouched();
+      return;
+    }
+
+    const request = this.apartmentForm.getRawValue();
+    this.formSubmitting.set(true);
+    this.formError.set(null);
+
+    const editingId = this.editingId();
+    const call = editingId
+      ? this.buildingService.updateApartment(editingId, request)
+      : this.buildingService.createApartment(request);
+
+    call.subscribe({
+      next: () => {
+        this.formSubmitting.set(false);
+        this.formOpen.set(false);
+        this.editingId.set(null);
+        this.loadApartments();
+      },
+      error: (err: Error) => {
+        this.formSubmitting.set(false);
+        this.formError.set(err.message);
+      },
+    });
+  }
+
+  deleteApartment(apartment: ApartmentSummary): void {
+    if (!confirm(`Да изтрия ли апартамент ${apartment.number}?`)) {
+      return;
+    }
+
+    this.deletingId.set(apartment.id);
+    this.apartmentsError.set(null);
+
+    this.buildingService.deleteApartment(apartment.id).subscribe({
+      next: () => {
+        this.deletingId.set(null);
+        this.loadApartments();
+      },
+      error: (err: Error) => {
+        this.deletingId.set(null);
+        this.apartmentsError.set(err.message);
+      },
+    });
+  }
+}
