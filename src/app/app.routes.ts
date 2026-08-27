@@ -107,5 +107,11 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/chat/chat').then((m) => m.Chat),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/documents',
+    loadComponent: () =>
+      import('./pages/document-center/document-center').then((m) => m.DocumentCenter),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];
