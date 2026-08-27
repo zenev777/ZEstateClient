@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { BuildingService } from '../../core/services/building.service';
 import { SessionService } from '../../core/services/session.service';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
+import { NotificationBell } from '../../shared/notification-bell/notification-bell';
 import { JoinRequestSummary, MeResponse } from '../../core/models/auth.models';
 
 interface MockRepair {
@@ -27,7 +28,7 @@ interface MockDue {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, DecimalPipe, BottomNav],
+  imports: [RouterLink, DecimalPipe, BottomNav, NotificationBell],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {
