@@ -42,3 +42,15 @@ export interface GenerateObligationsResult {
   created: number;
   skippedExisting: number;
 }
+
+export interface ObligationStatusCount {
+  count: number;
+  total: number;
+}
+
+export interface ObligationsSummary {
+  pending: ObligationStatusCount;
+  partiallyPaid: ObligationStatusCount;
+  paid: ObligationStatusCount;
+  overdue: ObligationStatusCount;
+}

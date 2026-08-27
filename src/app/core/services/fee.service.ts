@@ -7,6 +7,7 @@ import {
   FeeSummary,
   GenerateObligationsResult,
   ObligationSummary,
+  ObligationsSummary,
 } from '../models/fee.models';
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +47,18 @@ export class FeeService {
   getObligations(): Observable<ObligationSummary[]> {
     return this.http
       .get<ObligationSummary[]>(`${this.baseUrl}/fees/obligations`)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  getObligationsSummary(): Observable<ObligationsSummary> {
+    return this.http
+      .get<ObligationsSummary>(`${this.baseUrl}/fees/obligations/summary`)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  markOverdue(): Observable<{ markedOverdue: number }> {
+    return this.http
+      .post<{ markedOverdue: number }>(`${this.baseUrl}/fees/mark-overdue`, {})
       .pipe(catchError(this.rethrowWithMessage));
   }
 

@@ -3,7 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FeeService } from '../../core/services/fee.service';
-import { FeeSummary, ObligationSummary } from '../../core/models/fee.models';
+import { FeeSummary, ObligationSummary, ObligationsSummary } from '../../core/models/fee.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 const FEE_TYPE_LABELS = ['Фиксирана сума', 'По идеални части'];
@@ -40,6 +40,9 @@ export class FeeManagement implements OnInit {
   readonly generating = signal(false);
   readonly generateResult = signal<string | null>(null);
 
+  readonly summary = signal<ObligationsSummary | null>(null);
+  readonly markingOverdue = signal(false);
+
   readonly obligationsOpen = signal(false);
   readonly obligationsLoading = signal(false);
   readonly obligations = signal<ObligationSummary[]>([]);
@@ -57,6 +60,28 @@ export class FeeManagement implements OnInit {
 
   ngOnInit(): void {
     this.loadFees();
+    this.loadSummary();
+  }
+
+  loadSummary(): void {
+    this.feeService.getObligationsSummary().subscribe({
+      next: (summary) => this.summary.set(summary),
+      error: () => {},
+    });
+  }
+
+  markOverdue(): void {
+    this.markingOverdue.set(true);
+    this.feeService.markOverdue().subscribe({
+      next: () => {
+        this.markingOverdue.set(false);
+        this.loadSummary();
+        if (this.obligationsOpen()) {
+          this.loadObligations();
+        }
+      },
+      error: () => this.markingOverdue.set(false),
+    });
   }
 
   back(): void {
@@ -179,6 +204,7 @@ export class FeeManagement implements OnInit {
         this.generateResult.set(
           `Генерирани: ${result.created}, вече съществуваха: ${result.skippedExisting}.`,
         );
+        this.loadSummary();
         if (this.obligationsOpen()) {
           this.loadObligations();
         }

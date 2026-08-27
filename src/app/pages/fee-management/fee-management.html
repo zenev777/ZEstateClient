@@ -15,6 +15,28 @@
       </div>
     </div>
 
+    @if (summary(); as s) {
+      <div class="section-label"><span>Справка по статус</span></div>
+      <div class="stat-grid" style="margin-bottom: var(--space-3);">
+        <div class="stat-card">
+          <span class="stat-card-label">Неплатени</span>
+          <span class="stat-card-value">{{ s.pending.count }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Частично платени</span>
+          <span class="stat-card-value">{{ s.partiallyPaid.count }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Платени</span>
+          <span class="stat-card-value">{{ s.paid.count }}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Просрочени</span>
+          <span class="stat-card-value">{{ s.overdue.count }}</span>
+        </div>
+      </div>
+    }
+
     <div class="card" style="margin-bottom: var(--space-3);">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
         <div>
@@ -28,6 +50,13 @@
       @if (generateResult()) {
         <p class="field-hint" style="margin-top: 8px;">{{ generateResult() }}</p>
       }
+      <div class="hr"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <div class="card-meta">Провери за просрочени задължения по падеж (обикновено — автоматично всеки ден).</div>
+        <button type="button" class="btn btn-secondary btn-sm" [disabled]="markingOverdue()" (click)="markOverdue()">
+          {{ markingOverdue() ? 'Проверка…' : 'Провери сега' }}
+        </button>
+      </div>
     </div>
 
     <div class="section-title">
