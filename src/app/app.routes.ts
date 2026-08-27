@@ -102,5 +102,10 @@ export const routes: Routes = [
       import('./pages/role-management/role-management').then((m) => m.RoleManagement),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/chat',
+    loadComponent: () => import('./pages/chat/chat').then((m) => m.Chat),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

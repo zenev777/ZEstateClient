@@ -1,0 +1,52 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Общ чат</div>
+          <div class="app-subtitle">Съобщения между съседите в сградата</div>
+        </div>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (messages().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Все още няма съобщения. Бъди първи!</p>
+    } @else {
+      <div class="list-stack" style="margin-bottom: var(--space-3);">
+        @for (item of messages(); track item.id) {
+          <div class="card" [style.background]="item.senderName === currentUserName ? 'var(--color-icon-bg)' : ''">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <div style="flex: 1;">
+                <div style="font-weight: 600; font-size: 13px;">{{ item.senderName }}</div>
+                <div style="font-size: 14px; margin-top: 2px; white-space: pre-wrap;">{{ item.message }}</div>
+                <div class="card-meta" style="margin-top: 4px;">{{ item.sentAt | date: 'dd.MM.yyyy HH:mm' }}</div>
+              </div>
+              @if (isManager) {
+                <button type="button" class="btn btn-secondary btn-sm icon-btn-reject" (click)="deleteMessage(item)">Изтрий</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <form (ngSubmit)="send()" novalidate style="display: flex; gap: 8px;">
+      <input class="input" style="flex: 1;" [formControl]="messageControl" placeholder="Напиши съобщение…" (keyup.enter)="send()" />
+      <button type="submit" class="btn btn-primary" [disabled]="sending()">Изпрати</button>
+    </form>
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
