@@ -96,5 +96,11 @@ export const routes: Routes = [
       import('./pages/meeting-management/meeting-management').then((m) => m.MeetingManagement),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/roles',
+    loadComponent: () =>
+      import('./pages/role-management/role-management').then((m) => m.RoleManagement),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

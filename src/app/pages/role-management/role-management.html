@@ -1,0 +1,105 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Роли и права</div>
+          <div class="app-subtitle">Управление на съседи и предаване на права</div>
+        </div>
+      </div>
+    </div>
+
+    @if (transferStatus()?.pending) {
+      <div class="card" style="margin-bottom: var(--space-3); border-color: var(--color-danger);">
+        <div class="card-title">Чакащо прехвърляне на права</div>
+        <p class="card-body" style="margin-top: 4px;">
+          Правата на домоуправител ще преминат към <strong>{{ transferStatus()?.toUserName }}</strong> на
+          {{ transferStatus()?.effectiveAt | date: 'dd.MM.yyyy HH:mm' }}, освен ако не отмениш прехвърлянето дотогава.
+        </p>
+        <button type="button" class="btn btn-secondary" style="margin-top: 8px;" [disabled]="cancelling()" (click)="cancelPendingTransfer()">
+          {{ cancelling() ? 'Отменяне…' : 'Отмени прехвърлянето' }}
+        </button>
+      </div>
+    }
+
+    @if (membersError()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ membersError() }}</div>
+    }
+
+    <div class="section-label"><span>Съседи в сградата</span></div>
+
+    @if (membersLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (members().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма други членове на сградата.</p>
+    } @else {
+      <div class="list-stack">
+        @for (member of members(); track member.userId) {
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <div>
+                <div class="card-title">{{ member.name }}</div>
+                <div class="card-meta" style="margin-top: 2px;">
+                  Апартамент {{ member.apartmentNumber }} &middot; {{ member.email }}
+                </div>
+                <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                  @for (role of member.roles; track role) {
+                    <span class="tag tag-neutral">{{ role }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                [disabled]="actioningUserId() === member.userId || !transferStatus() || transferStatus()!.pending"
+                (click)="toggleCashier(member)"
+              >
+                {{ member.roles.includes('Cashier') ? 'Премахни като касиер' : 'Направи касиер' }}
+              </button>
+              @if (!transferStatus()?.pending) {
+                <button type="button" class="btn btn-secondary btn-sm" (click)="startTransfer(member)">Предай права на домоуправител</button>
+              }
+            </div>
+
+            @if (transferFormOpenFor() === member.userId) {
+              <div class="hr"></div>
+              @if (transferError()) {
+                <div class="alert alert-error">{{ transferError() }}</div>
+              }
+              <p class="card-meta" style="margin-bottom: 6px;">
+                За потвърждение въведи собствената си парола. Прехвърлянето влиза в сила след 2 дни и може да бъде отменено дотогава.
+              </p>
+              <div class="field">
+                <label for="transferPassword">Твоята парола</label>
+                <input id="transferPassword" class="input" type="password" [formControl]="passwordControl" />
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  style="flex: 1;"
+                  [disabled]="transferSubmitting()"
+                  (click)="confirmTransfer(member)"
+                >
+                  {{ transferSubmitting() ? 'Потвърждаване…' : 'Потвърди прехвърлянето' }}
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="cancelTransferForm()">Отказ</button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
