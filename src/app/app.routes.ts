@@ -90,5 +90,11 @@ export const routes: Routes = [
       import('./pages/financial-reports/financial-reports').then((m) => m.FinancialReports),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/meetings',
+    loadComponent: () =>
+      import('./pages/meeting-management/meeting-management').then((m) => m.MeetingManagement),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];
