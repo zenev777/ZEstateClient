@@ -35,6 +35,9 @@ export class BuildingManagement implements OnInit {
   readonly logLoading = signal(false);
   readonly log = signal<InviteCodeLogEntry[]>([]);
 
+  readonly quorumSaving = signal(false);
+  readonly quorumControl = this.fb.nonNullable.control(50);
+
   readonly apartmentsLoading = signal(true);
   readonly apartments = signal<ApartmentSummary[]>([]);
   readonly idealPartsTotal = signal(0);
@@ -86,6 +89,18 @@ export class BuildingManagement implements OnInit {
     this.limitsForm.patchValue({
       expiresAt: building.inviteCodeExpiresAt ? building.inviteCodeExpiresAt.slice(0, 10) : '',
       maxUses: building.inviteCodeMaxUses,
+    });
+    this.quorumControl.setValue(building.quorumThresholdPercent);
+  }
+
+  saveQuorumThreshold(): void {
+    this.quorumSaving.set(true);
+    this.buildingService.updateQuorumThreshold(this.quorumControl.value).subscribe({
+      next: (building) => {
+        this.quorumSaving.set(false);
+        this.applyBuilding(building);
+      },
+      error: () => this.quorumSaving.set(false),
     });
   }
 

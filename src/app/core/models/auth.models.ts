@@ -72,6 +72,7 @@ export interface BuildingSummary {
   inviteCodeExpiresAt: string | null;
   inviteCodeMaxUses: number | null;
   inviteCodeUseCount: number;
+  quorumThresholdPercent: number;
 }
 
 export interface InviteCodeLimitsRequest {
