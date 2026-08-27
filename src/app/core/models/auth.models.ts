@@ -68,6 +68,25 @@ export interface BuildingSummary {
   name: string;
   address: string;
   inviteCode: string;
+  inviteCodeActive: boolean;
+  inviteCodeExpiresAt: string | null;
+  inviteCodeMaxUses: number | null;
+  inviteCodeUseCount: number;
+}
+
+export interface InviteCodeLimitsRequest {
+  expiresAt: string | null;
+  maxUses: number | null;
+}
+
+// Mirrors ZEstate.Infrastructure.Data.Enums.InviteCodeAction (serialized as a number)
+export interface InviteCodeLogEntry {
+  id: number;
+  action: number;
+  oldCode: string | null;
+  newCode: string | null;
+  changedAt: string;
+  changedByName: string;
 }
 
 export interface UpdateBuildingRequest {

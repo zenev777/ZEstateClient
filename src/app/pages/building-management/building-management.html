@@ -48,6 +48,90 @@
       </div>
     }
 
+    <div class="section-label"><span>Код за покана</span></div>
+    @if (building()) {
+      <div class="card" style="margin-bottom: var(--space-3);">
+        @if (inviteActionError()) {
+          <div class="alert alert-error">{{ inviteActionError() }}</div>
+        }
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+          <div>
+            <div class="card-title" style="font-family: monospace; letter-spacing: 1px;">{{ building()!.inviteCode }}</div>
+            <div class="card-meta" style="margin-top: 4px;">
+              Използван {{ building()!.inviteCodeUseCount }}{{ building()!.inviteCodeMaxUses ? ' / ' + building()!.inviteCodeMaxUses : '' }} пъти
+              @if (building()!.inviteCodeExpiresAt) {
+                &middot; валиден до {{ building()!.inviteCodeExpiresAt | date: 'dd.MM.yyyy' }}
+              }
+            </div>
+          </div>
+          @if (building()!.inviteCodeActive) {
+            <span class="tag tag-accent">Активен</span>
+          } @else {
+            <span class="tag">Анулиран</span>
+          }
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn btn-secondary btn-sm" [disabled]="inviteActionLoading()" (click)="regenerateInviteCode()">
+            Обнови кода
+          </button>
+          @if (building()!.inviteCodeActive) {
+            <button type="button" class="btn btn-secondary btn-sm icon-btn-reject" [disabled]="inviteActionLoading()" (click)="revokeInviteCode()">
+              Анулирай кода
+            </button>
+          }
+        </div>
+
+        <div class="hr"></div>
+
+        <form [formGroup]="limitsForm" (ngSubmit)="saveInviteCodeLimits()" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="inviteExpiresAt">Валиден до (по избор)</label>
+              <input id="inviteExpiresAt" class="input" type="date" formControlName="expiresAt" />
+            </div>
+            <div class="field">
+              <label for="inviteMaxUses">Лимит използвания (по избор)</label>
+              <input id="inviteMaxUses" class="input" type="number" min="1" formControlName="maxUses" />
+            </div>
+          </div>
+          <button type="submit" class="btn btn-secondary btn-block" [disabled]="inviteActionLoading()">
+            Запази ограниченията
+          </button>
+        </form>
+
+        <div class="hr"></div>
+
+        <button type="button" class="btn btn-secondary btn-sm" (click)="toggleLog()">
+          {{ logOpen() ? 'Скрий историята' : 'Покажи история на промените' }}
+        </button>
+
+        @if (logOpen()) {
+          @if (logLoading()) {
+            <p class="text-muted" style="text-align: center; padding: 12px 0;">Зареждане…</p>
+          } @else if (log().length === 0) {
+            <p class="text-muted" style="text-align: center; padding: 12px 0;">Няма промени още.</p>
+          } @else {
+            <div class="list-stack" style="margin-top: 8px;">
+              @for (entry of log(); track entry.id) {
+                <div class="card-meta" style="padding: 6px 0; border-bottom: 1px solid var(--color-border);">
+                  {{ entry.changedAt | date: 'dd.MM.yyyy HH:mm' }} &middot; {{ entry.changedByName }}
+                  @if (entry.action === 0) {
+                    — обновен код ({{ entry.oldCode }} → {{ entry.newCode }})
+                  } @else if (entry.action === 1) {
+                    — анулиран код ({{ entry.oldCode }})
+                  } @else {
+                    — сменени ограничения
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
     <div class="section-title">
       <h3>Апартаменти</h3>
       @if (!formOpen()) {

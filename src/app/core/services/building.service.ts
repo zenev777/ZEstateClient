@@ -7,6 +7,8 @@ import {
   ApartmentListResponse,
   ApartmentSummary,
   BuildingSummary,
+  InviteCodeLimitsRequest,
+  InviteCodeLogEntry,
   JoinRequestSummary,
   UpdateBuildingRequest,
 } from '../models/auth.models';
@@ -62,6 +64,30 @@ export class BuildingService {
   deleteApartment(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.baseUrl}/buildings/my/apartments/${id}`)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  regenerateInviteCode(): Observable<BuildingSummary> {
+    return this.http
+      .post<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/regenerate`, {})
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  revokeInviteCode(): Observable<BuildingSummary> {
+    return this.http
+      .post<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/revoke`, {})
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  updateInviteCodeLimits(request: InviteCodeLimitsRequest): Observable<BuildingSummary> {
+    return this.http
+      .put<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/limits`, request)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  getInviteCodeLog(): Observable<InviteCodeLogEntry[]> {
+    return this.http
+      .get<InviteCodeLogEntry[]>(`${this.baseUrl}/buildings/my/invite-code/log`)
       .pipe(catchError(this.rethrowWithMessage));
   }
 
