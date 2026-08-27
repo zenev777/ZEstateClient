@@ -66,5 +66,11 @@ export const routes: Routes = [
       import('./pages/building-management/building-management').then((m) => m.BuildingManagement),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/fee-management',
+    loadComponent: () =>
+      import('./pages/fee-management/fee-management').then((m) => m.FeeManagement),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];
