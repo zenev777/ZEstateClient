@@ -35,6 +35,9 @@
     } @else if (!isManager && me()?.membershipStatus === 'Rejected') {
       <div class="card" style="text-align: center; padding: var(--space-6);">
         <div class="card-title">Заявката ти беше отхвърлена</div>
+        @if (me()?.rejectionReason) {
+          <p class="card-body" style="margin-top: 8px;"><strong>Причина:</strong> {{ me()?.rejectionReason }}</p>
+        }
         @if (me()?.canRetry) {
           <p class="card-body" style="margin-top: 8px;">
             Домоуправителят отхвърли заявката ти за апартамент {{ me()?.apartmentNumber }} в

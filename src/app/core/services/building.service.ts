@@ -27,8 +27,8 @@ export class BuildingService {
     return this.http.post<{ message: string }>(`${this.baseUrl}/buildings/join-requests/${id}/approve`, {});
   }
 
-  reject(id: number): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.baseUrl}/buildings/join-requests/${id}/reject`, {});
+  reject(id: number, reason?: string | null): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/buildings/join-requests/${id}/reject`, { reason: reason || null });
   }
 
   getMyBuilding(): Observable<BuildingSummary> {

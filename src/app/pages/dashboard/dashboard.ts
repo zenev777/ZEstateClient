@@ -120,8 +120,13 @@ export class Dashboard implements OnInit {
   }
 
   reject(id: number): void {
+    const reason = prompt('Причина за отхвърляне (по избор):');
+    if (reason === null) {
+      return;
+    }
+
     this.actioningId.set(id);
-    this.buildingService.reject(id).subscribe({
+    this.buildingService.reject(id, reason.trim()).subscribe({
       next: () => this.removeRequest(id),
       error: () => this.actioningId.set(null),
     });
