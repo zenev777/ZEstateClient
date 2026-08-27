@@ -1,15 +1,15 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BuildingService } from '../../core/services/building.service';
-import { ApartmentSummary } from '../../core/models/auth.models';
+import { ApartmentSummary, BuildingSummary, InviteCodeLogEntry } from '../../core/models/auth.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 @Component({
   selector: 'app-building-management',
   standalone: true,
-  imports: [ReactiveFormsModule, DecimalPipe, BottomNav],
+  imports: [ReactiveFormsModule, DecimalPipe, DatePipe, BottomNav],
   templateUrl: './building-management.html',
 })
 export class BuildingManagement implements OnInit {
@@ -21,6 +21,19 @@ export class BuildingManagement implements OnInit {
   readonly buildingSaving = signal(false);
   readonly buildingError = signal<string | null>(null);
   readonly buildingSaved = signal(false);
+  readonly building = signal<BuildingSummary | null>(null);
+
+  readonly inviteActionLoading = signal(false);
+  readonly inviteActionError = signal<string | null>(null);
+
+  readonly limitsForm = this.fb.nonNullable.group({
+    expiresAt: [''],
+    maxUses: this.fb.control<number | null>(null),
+  });
+
+  readonly logOpen = signal(false);
+  readonly logLoading = signal(false);
+  readonly log = signal<InviteCodeLogEntry[]>([]);
 
   readonly apartmentsLoading = signal(true);
   readonly apartments = signal<ApartmentSummary[]>([]);
@@ -58,11 +71,112 @@ export class BuildingManagement implements OnInit {
     this.buildingService.getMyBuilding().subscribe({
       next: (building) => {
         this.buildingForm.patchValue({ name: building.name, address: building.address });
+        this.applyBuilding(building);
         this.buildingLoading.set(false);
       },
       error: (err: Error) => {
         this.buildingError.set(err.message);
         this.buildingLoading.set(false);
+      },
+    });
+  }
+
+  private applyBuilding(building: BuildingSummary): void {
+    this.building.set(building);
+    this.limitsForm.patchValue({
+      expiresAt: building.inviteCodeExpiresAt ? building.inviteCodeExpiresAt.slice(0, 10) : '',
+      maxUses: building.inviteCodeMaxUses,
+    });
+  }
+
+  regenerateInviteCode(): void {
+    if (!confirm('Старият код веднага става невалиден. Продължи?')) {
+      return;
+    }
+
+    this.inviteActionLoading.set(true);
+    this.inviteActionError.set(null);
+
+    this.buildingService.regenerateInviteCode().subscribe({
+      next: (building) => {
+        this.applyBuilding(building);
+        this.inviteActionLoading.set(false);
+        if (this.logOpen()) {
+          this.loadLog();
+        }
+      },
+      error: (err: Error) => {
+        this.inviteActionError.set(err.message);
+        this.inviteActionLoading.set(false);
+      },
+    });
+  }
+
+  revokeInviteCode(): void {
+    if (!confirm('Кодът ще спре да важи и никой няма да може да се присъедини с него, докато не генерираш нов. Продължи?')) {
+      return;
+    }
+
+    this.inviteActionLoading.set(true);
+    this.inviteActionError.set(null);
+
+    this.buildingService.revokeInviteCode().subscribe({
+      next: (building) => {
+        this.applyBuilding(building);
+        this.inviteActionLoading.set(false);
+        if (this.logOpen()) {
+          this.loadLog();
+        }
+      },
+      error: (err: Error) => {
+        this.inviteActionError.set(err.message);
+        this.inviteActionLoading.set(false);
+      },
+    });
+  }
+
+  saveInviteCodeLimits(): void {
+    const raw = this.limitsForm.getRawValue();
+
+    this.inviteActionLoading.set(true);
+    this.inviteActionError.set(null);
+
+    this.buildingService
+      .updateInviteCodeLimits({
+        expiresAt: raw.expiresAt ? raw.expiresAt : null,
+        maxUses: raw.maxUses,
+      })
+      .subscribe({
+        next: (building) => {
+          this.applyBuilding(building);
+          this.inviteActionLoading.set(false);
+          if (this.logOpen()) {
+            this.loadLog();
+          }
+        },
+        error: (err: Error) => {
+          this.inviteActionError.set(err.message);
+          this.inviteActionLoading.set(false);
+        },
+      });
+  }
+
+  toggleLog(): void {
+    this.logOpen.set(!this.logOpen());
+    if (this.logOpen() && this.log().length === 0) {
+      this.loadLog();
+    }
+  }
+
+  private loadLog(): void {
+    this.logLoading.set(true);
+    this.buildingService.getInviteCodeLog().subscribe({
+      next: (entries) => {
+        this.log.set(entries);
+        this.logLoading.set(false);
+      },
+      error: () => {
+        this.logLoading.set(false);
       },
     });
   }

@@ -57,6 +57,25 @@ export interface BuildingSummary {
   name: string;
   address: string;
   inviteCode: string;
+  inviteCodeActive: boolean;
+  inviteCodeExpiresAt: string | null;
+  inviteCodeMaxUses: number | null;
+  inviteCodeUseCount: number;
+}
+
+export interface InviteCodeLimitsRequest {
+  expiresAt: string | null;
+  maxUses: number | null;
+}
+
+// Съответства на ZEstate.Infrastructure.Data.Enums.InviteCodeAction (сериализира се като число)
+export interface InviteCodeLogEntry {
+  id: number;
+  action: number;
+  oldCode: string | null;
+  newCode: string | null;
+  changedAt: string;
+  changedByName: string;
 }
 
 export interface UpdateBuildingRequest {
