@@ -27,6 +27,10 @@
       <button type="submit" class="btn btn-primary btn-block" [disabled]="loggingIn()">
         {{ loggingIn() ? 'Влизане…' : 'Вход' }}
       </button>
+
+      <p style="font-size: 13px; text-align: center; margin: 10px 0 0;">
+        <a routerLink="/forgot-password">Забравена парола?</a>
+      </p>
     </form>
 
     <div class="hr"></div>

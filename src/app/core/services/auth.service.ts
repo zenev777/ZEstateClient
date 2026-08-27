@@ -5,10 +5,12 @@ import { environment } from '../../../environments/environment';
 import {
   AuthResponse,
   BuildingSummary,
+  ForgotPasswordRequest,
   JoinBuildingRequest,
   LoginRequest,
   MeResponse,
   RegisterRequest,
+  ResetPasswordRequest,
 } from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +44,18 @@ export class AuthService {
   resubmitJoinRequest(request: JoinBuildingRequest): Observable<{ message: string }> {
     return this.http
       .post<{ message: string }>(`${this.baseUrl}/auth/resubmit-join-request`, request)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/forgot-password`, request)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/auth/reset-password`, request)
       .pipe(catchError(this.rethrowWithMessage));
   }
 
