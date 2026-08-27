@@ -78,5 +78,11 @@ export const routes: Routes = [
       import('./pages/payment-management/payment-management').then((m) => m.PaymentManagement),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/repairs',
+    loadComponent: () =>
+      import('./pages/repair-management/repair-management').then((m) => m.RepairManagement),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

@@ -1,0 +1,174 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Ремонти</div>
+          <div class="app-subtitle">Бюджет, разходи и фактури</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h3>Ремонти</h3>
+      @if (!formOpen()) {
+        <button type="button" class="btn btn-secondary btn-sm" (click)="startCreate()">+ Ремонт</button>
+      }
+    </div>
+
+    @if (repairsError()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ repairsError() }}</div>
+    }
+
+    @if (formOpen()) {
+      <div class="card" style="margin-bottom: var(--space-3);">
+        @if (formError()) {
+          <div class="alert alert-error">{{ formError() }}</div>
+        }
+        <form [formGroup]="createForm" (ngSubmit)="submitCreate()" novalidate>
+          <div class="field" [class.has-error]="createForm.controls.title.invalid && createForm.controls.title.touched">
+            <label for="repairTitle">Заглавие</label>
+            <input id="repairTitle" class="input" formControlName="title" placeholder="Ремонт на асансьор" />
+          </div>
+          <div class="field">
+            <label for="repairDescription">Описание (по избор)</label>
+            <input id="repairDescription" class="input" formControlName="description" />
+          </div>
+          <div class="field" [class.has-error]="createForm.controls.budget.invalid && createForm.controls.budget.touched">
+            <label for="repairBudget">Планиран бюджет (лв.)</label>
+            <input id="repairBudget" class="input" type="number" step="0.01" formControlName="budget" />
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;" [disabled]="formSubmitting()">
+              {{ formSubmitting() ? 'Запазване…' : 'Добави' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="cancelCreate()">Отказ</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (repairsLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (repairs().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма добавени ремонти.</p>
+    } @else {
+      <div class="list-stack">
+        @for (repair of repairs(); track repair.id) {
+          <div class="card">
+            @if (editingId() === repair.id) {
+              <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
+                @if (formError()) {
+                  <div class="alert alert-error">{{ formError() }}</div>
+                }
+                <div class="field">
+                  <label for="editTitle{{ repair.id }}">Заглавие</label>
+                  <input id="editTitle{{ repair.id }}" class="input" formControlName="title" />
+                </div>
+                <div class="field">
+                  <label for="editDescription{{ repair.id }}">Описание</label>
+                  <input id="editDescription{{ repair.id }}" class="input" formControlName="description" />
+                </div>
+                <div class="form-row">
+                  <div class="field">
+                    <label for="editBudget{{ repair.id }}">Планиран бюджет (лв.)</label>
+                    <input id="editBudget{{ repair.id }}" class="input" type="number" step="0.01" formControlName="budget" />
+                  </div>
+                  <div class="field">
+                    <label for="editActualCost{{ repair.id }}">Реален разход (лв., по избор)</label>
+                    <input id="editActualCost{{ repair.id }}" class="input" type="number" step="0.01" formControlName="actualCost" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="editStatus{{ repair.id }}">Статус</label>
+                  <select id="editStatus{{ repair.id }}" class="input" formControlName="status">
+                    <option value="Planned">Планиран</option>
+                    <option value="InProgress">В процес</option>
+                    <option value="Completed">Завършен</option>
+                  </select>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="submit" class="btn btn-primary" style="flex: 1;" [disabled]="formSubmitting()">
+                    {{ formSubmitting() ? 'Запазване…' : 'Запази' }}
+                  </button>
+                  <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Отказ</button>
+                </div>
+              </form>
+            } @else {
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                <div>
+                  <div class="card-title">{{ repair.title }}</div>
+                  <div class="card-meta" style="margin-top: 4px;">
+                    {{ statusLabels[repair.status] }} &middot; бюджет {{ repair.budget | number: '1.2-2' }} лв.
+                    @if (repair.actualCost) {
+                      &middot; реален разход {{ repair.actualCost | number: '1.2-2' }} лв.
+                    }
+                  </div>
+                  @if (repair.costsAllocated) {
+                    <span class="tag" style="margin-top: 4px;">Разходите са разпределени</span>
+                  }
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(repair)">Редакция</button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="toggleDocuments(repair)">Фактури</button>
+                @if (!repair.costsAllocated && repair.status !== 0) {
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    [disabled]="allocatingId() === repair.id"
+                    (click)="allocateCosts(repair)"
+                  >
+                    {{ allocatingId() === repair.id ? 'Разпределяне…' : 'Разпредели разходите' }}
+                  </button>
+                }
+                @if (!repair.costsAllocated) {
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm icon-btn-reject"
+                    [disabled]="deletingId() === repair.id"
+                    (click)="deleteRepair(repair)"
+                  >
+                    Изтрий
+                  </button>
+                }
+              </div>
+
+              @if (expandedId() === repair.id) {
+                <div class="hr"></div>
+                <div class="field">
+                  <label for="upload{{ repair.id }}">Качи фактура</label>
+                  <input
+                    id="upload{{ repair.id }}"
+                    class="input"
+                    type="file"
+                    [disabled]="uploadingId() === repair.id"
+                    (change)="uploadDocument(repair, $event)"
+                  />
+                </div>
+                @if (documentsFor(repair.id).length === 0) {
+                  <p class="text-muted" style="font-size: 13px;">Няма прикачени файлове.</p>
+                } @else {
+                  @for (doc of documentsFor(repair.id); track doc.id) {
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--color-border);">
+                      <span class="card-meta">{{ doc.fileName }} &middot; {{ doc.uploadedAt | date: 'dd.MM.yyyy' }}</span>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="downloadDocument(doc)">Свали</button>
+                    </div>
+                  }
+                }
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
