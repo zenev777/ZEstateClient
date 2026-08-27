@@ -4,7 +4,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MeetingService } from '../../core/services/meeting.service';
 import { SessionService } from '../../core/services/session.service';
+import { VotingService } from '../../core/services/voting.service';
 import { MeetingMinutes, MeetingSummary } from '../../core/models/meeting.models';
+import { VoteQuestionSummary, VoteValue } from '../../core/models/voting.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 const MEETING_STATUS_LABELS = ['Предстоящо', 'В момента', 'Приключило'];
@@ -24,6 +26,7 @@ export class MeetingManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly meetingService = inject(MeetingService);
+  private readonly votingService = inject(VotingService);
   private readonly session = inject(SessionService);
 
   readonly statusLabels = MEETING_STATUS_LABELS;
@@ -43,6 +46,18 @@ export class MeetingManagement implements OnInit {
   readonly expandedId = signal<number | null>(null);
   readonly minutesByMeetingId = signal<Record<number, MeetingMinutes[]>>({});
   readonly uploadingId = signal<number | null>(null);
+
+  readonly votingExpandedId = signal<number | null>(null);
+  readonly questionsByMeetingId = signal<Record<number, VoteQuestionSummary[]>>({});
+  readonly questionFormOpenFor = signal<number | null>(null);
+  readonly questionSubmitting = signal(false);
+  readonly votingActionId = signal<number | null>(null);
+
+  readonly questionForm = this.fb.nonNullable.group({
+    question: ['', [Validators.required, Validators.maxLength(300)]],
+    startAt: [toLocalInput(new Date()), Validators.required],
+    endAt: [toLocalInput(new Date(Date.now() + 24 * 60 * 60 * 1000)), Validators.required],
+  });
 
   readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(150)]],
@@ -236,6 +251,68 @@ export class MeetingManagement implements OnInit {
       link.download = doc.fileName;
       link.click();
       URL.revokeObjectURL(url);
+    });
+  }
+
+  toggleVoting(meeting: MeetingSummary): void {
+    if (this.votingExpandedId() === meeting.id) {
+      this.votingExpandedId.set(null);
+      return;
+    }
+
+    this.votingExpandedId.set(meeting.id);
+    this.loadQuestions(meeting.id);
+  }
+
+  private loadQuestions(meetingId: number): void {
+    this.votingService.getQuestions(meetingId).subscribe({
+      next: (questions) => this.questionsByMeetingId.update((map) => ({ ...map, [meetingId]: questions })),
+      error: () => {},
+    });
+  }
+
+  questionsFor(meetingId: number): VoteQuestionSummary[] {
+    return this.questionsByMeetingId()[meetingId] ?? [];
+  }
+
+  startCreateQuestion(meetingId: number): void {
+    this.questionForm.reset({
+      question: '',
+      startAt: toLocalInput(new Date()),
+      endAt: toLocalInput(new Date(Date.now() + 24 * 60 * 60 * 1000)),
+    });
+    this.questionFormOpenFor.set(meetingId);
+  }
+
+  cancelCreateQuestion(): void {
+    this.questionFormOpenFor.set(null);
+  }
+
+  submitQuestion(meetingId: number): void {
+    if (this.questionForm.invalid) {
+      this.questionForm.markAllAsTouched();
+      return;
+    }
+
+    this.questionSubmitting.set(true);
+    this.votingService.createQuestion(meetingId, this.questionForm.getRawValue()).subscribe({
+      next: () => {
+        this.questionSubmitting.set(false);
+        this.questionFormOpenFor.set(null);
+        this.loadQuestions(meetingId);
+      },
+      error: () => this.questionSubmitting.set(false),
+    });
+  }
+
+  castVote(question: VoteQuestionSummary, value: VoteValue): void {
+    this.votingActionId.set(question.id);
+    this.votingService.vote(question.id, value).subscribe({
+      next: () => {
+        this.votingActionId.set(null);
+        this.loadQuestions(question.meetingId);
+      },
+      error: () => this.votingActionId.set(null),
     });
   }
 }

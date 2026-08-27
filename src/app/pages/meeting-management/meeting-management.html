@@ -121,6 +121,7 @@
                 <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(meeting)">Редакция</button>
               }
               <button type="button" class="btn btn-secondary btn-sm" (click)="toggleMinutes(meeting)">Протокол</button>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="toggleVoting(meeting)">Гласувания</button>
               @if (isManager) {
                 <button
                   type="button"
@@ -154,6 +155,74 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--color-border);">
                     <span class="card-meta">{{ doc.fileName }} &middot; {{ doc.uploadedAt | date: 'dd.MM.yyyy' }}</span>
                     <button type="button" class="btn btn-secondary btn-sm" (click)="downloadMinutes(doc)">Свали</button>
+                  </div>
+                }
+              }
+            }
+
+            @if (votingExpandedId() === meeting.id) {
+              <div class="hr"></div>
+              @if (isManager) {
+                @if (questionFormOpenFor() === meeting.id) {
+                  <form [formGroup]="questionForm" (ngSubmit)="submitQuestion(meeting.id)" novalidate style="margin-bottom: 8px;">
+                    <div class="field">
+                      <label for="question{{ meeting.id }}">Въпрос</label>
+                      <input id="question{{ meeting.id }}" class="input" formControlName="question" placeholder="Одобрявате ли новия бюджет?" />
+                    </div>
+                    <div class="form-row">
+                      <div class="field">
+                        <label for="qStart{{ meeting.id }}">Начало на гласуването</label>
+                        <input id="qStart{{ meeting.id }}" class="input" type="datetime-local" formControlName="startAt" />
+                      </div>
+                      <div class="field">
+                        <label for="qEnd{{ meeting.id }}">Край на гласуването</label>
+                        <input id="qEnd{{ meeting.id }}" class="input" type="datetime-local" formControlName="endAt" />
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button type="submit" class="btn btn-primary btn-sm" style="flex: 1;" [disabled]="questionSubmitting()">Добави</button>
+                      <button type="button" class="btn btn-secondary btn-sm" (click)="cancelCreateQuestion()">Отказ</button>
+                    </div>
+                  </form>
+                } @else {
+                  <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 8px;" (click)="startCreateQuestion(meeting.id)">+ Въпрос за гласуване</button>
+                }
+              }
+
+              @if (questionsFor(meeting.id).length === 0) {
+                <p class="text-muted" style="font-size: 13px;">Няма въпроси за гласуване.</p>
+              } @else {
+                @for (q of questionsFor(meeting.id); track q.id) {
+                  <div class="card" style="margin-bottom: 8px;">
+                    <div style="font-weight: 600; font-size: 13.5px;">{{ q.question }}</div>
+                    <div class="card-meta" style="margin-top: 2px;">
+                      {{ q.startAt | date: 'dd.MM HH:mm' }} – {{ q.endAt | date: 'dd.MM HH:mm' }} &middot;
+                      @if (q.status === 'Scheduled') { предстои }
+                      @else if (q.status === 'Open') { отворено }
+                      @else { приключено }
+                    </div>
+
+                    @if (q.status === 'Open' && !q.hasVoted) {
+                      <div style="display: flex; gap: 6px; margin-top: 6px;">
+                        <button type="button" class="btn btn-secondary btn-sm" [disabled]="votingActionId() === q.id" (click)="castVote(q, 'Yes')">Да</button>
+                        <button type="button" class="btn btn-secondary btn-sm" [disabled]="votingActionId() === q.id" (click)="castVote(q, 'No')">Не</button>
+                        <button type="button" class="btn btn-secondary btn-sm" [disabled]="votingActionId() === q.id" (click)="castVote(q, 'Abstain')">Без мнение</button>
+                      </div>
+                    } @else if (q.hasVoted) {
+                      <p class="field-hint" style="margin-top: 4px;">Вече гласува.</p>
+                    }
+
+                    <div style="margin-top: 8px;">
+                      <div style="display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--color-border);">
+                        <div [style.width.%]="q.result.yesPercent" style="background: var(--color-success);"></div>
+                        <div [style.width.%]="q.result.noPercent" style="background: var(--color-danger);"></div>
+                        <div [style.width.%]="q.result.abstainPercent" style="background: var(--color-text-muted);"></div>
+                      </div>
+                      <div class="card-meta" style="margin-top: 4px;">
+                        Да {{ q.result.yesPercent }}% &middot; Не {{ q.result.noPercent }}% &middot; Без мнение {{ q.result.abstainPercent }}%
+                        &middot; участие {{ q.result.turnoutPercent }}%
+                      </div>
+                    </div>
                   </div>
                 }
               }
