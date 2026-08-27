@@ -1,0 +1,182 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Такси и задължения</div>
+          <div class="app-subtitle">Управление на таксите за сградата</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <div>
+          <div class="card-title">Генериране на задължения</div>
+          <div class="card-meta" style="margin-top: 2px;">Обикновено става автоматично всеки ден — този бутон е за ръчно/веднага стартиране.</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" [disabled]="generating()" (click)="generateObligations()">
+          {{ generating() ? 'Генериране…' : 'Генерирай сега' }}
+        </button>
+      </div>
+      @if (generateResult()) {
+        <p class="field-hint" style="margin-top: 8px;">{{ generateResult() }}</p>
+      }
+    </div>
+
+    <div class="section-title">
+      <h3>Такси</h3>
+      @if (!formOpen()) {
+        <button type="button" class="btn btn-secondary btn-sm" (click)="startCreate()">+ Такса</button>
+      }
+    </div>
+
+    @if (feesError()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ feesError() }}</div>
+    }
+
+    @if (formOpen()) {
+      <div class="card" style="margin-bottom: var(--space-3);">
+        @if (formError()) {
+          <div class="alert alert-error">{{ formError() }}</div>
+        }
+        <form [formGroup]="feeForm" (ngSubmit)="submitFee()" novalidate>
+          <div class="field" [class.has-error]="feeForm.controls.title.invalid && feeForm.controls.title.touched">
+            <label for="feeTitle">Заглавие</label>
+            <input id="feeTitle" class="input" formControlName="title" placeholder="Месечна такса поддръжка" />
+          </div>
+          <div class="field">
+            <label for="feeDescription">Описание (по избор)</label>
+            <input id="feeDescription" class="input" formControlName="description" />
+          </div>
+          <div class="form-row">
+            <div class="field" [class.has-error]="feeForm.controls.amount.invalid && feeForm.controls.amount.touched">
+              <label for="feeAmount">Сума (лв.)</label>
+              <input id="feeAmount" class="input" type="number" step="0.01" formControlName="amount" />
+            </div>
+            <div class="field">
+              <label for="feeType">Тип</label>
+              <select id="feeType" class="input" formControlName="type">
+                <option value="Fixed">Фиксирана сума на апартамент</option>
+                <option value="PerIdealPart">Разпределена по идеални части</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="feeFrequency">Периодичност</label>
+              <select id="feeFrequency" class="input" formControlName="frequency">
+                <option value="Monthly">Месечна</option>
+                <option value="OneTime">Еднократна</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="feePriority">Приоритет</label>
+              <select id="feePriority" class="input" formControlName="priority">
+                <option value="Low">Нисък</option>
+                <option value="Normal">Нормален</option>
+                <option value="High">Висок</option>
+                <option value="Urgent">Спешен</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label for="feeDateFrom">Валидна от</label>
+              <input id="feeDateFrom" class="input" type="date" formControlName="dateFrom" />
+            </div>
+            <div class="field">
+              <label for="feeDateTo">Валидна до (по избор)</label>
+              <input id="feeDateTo" class="input" type="date" formControlName="dateTo" />
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;" [disabled]="formSubmitting()">
+              {{ formSubmitting() ? 'Запазване…' : (editingId() ? 'Запази' : 'Добави') }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="cancelForm()">Отказ</button>
+          </div>
+        </form>
+      </div>
+    }
+
+    @if (feesLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (fees().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма добавени такси.</p>
+    } @else {
+      <div class="list-stack">
+        @for (fee of fees(); track fee.id) {
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+              <div>
+                <div class="card-title">{{ fee.title }}</div>
+                <div class="card-meta" style="margin-top: 4px;">
+                  {{ feeTypeLabels[fee.type] }} &middot; {{ feeFrequencyLabels[fee.frequency] }} &middot; от {{ fee.dateFrom | date: 'dd.MM.yyyy' }}
+                  @if (fee.dateTo) {
+                    до {{ fee.dateTo | date: 'dd.MM.yyyy' }}
+                  }
+                </div>
+              </div>
+              <span class="tag tag-accent">{{ fee.amount | number: '1.2-2' }} лв.</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(fee)">Редакция</button>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm icon-btn-reject"
+                [disabled]="deletingId() === fee.id"
+                (click)="deleteFee(fee)"
+              >
+                Изтрий
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="section-title" style="margin-top: var(--space-4);">
+      <h3>Генерирани задължения</h3>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="toggleObligations()">
+        {{ obligationsOpen() ? 'Скрий' : 'Покажи' }}
+      </button>
+    </div>
+
+    @if (obligationsOpen()) {
+      @if (obligationsLoading()) {
+        <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+      } @else if (obligations().length === 0) {
+        <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма генерирани задължения още.</p>
+      } @else {
+        <div class="list-stack">
+          @for (obligation of obligations(); track obligation.id) {
+            <div class="card due-row">
+              <div>
+                <div style="font-weight: 600; font-size: 14.5px;">Апартамент {{ obligation.apartmentNumber }} &middot; {{ obligation.feeTitle }}</div>
+                <div class="due-row-meta">
+                  @if (obligation.period) {
+                    Период {{ obligation.period | date: 'MM.yyyy' }} &middot;
+                  }
+                  Падеж {{ obligation.dueDate | date: 'dd.MM.yyyy' }}
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div class="due-row-amount">{{ obligation.amount | number: '1.2-2' }} лв.</div>
+                <span class="card-meta">{{ obligationStatusLabels[obligation.status] }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
