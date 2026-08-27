@@ -1,0 +1,121 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Документи</div>
+          <div class="app-subtitle">Протоколи, договори и фактури</div>
+        </div>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ error() }}</div>
+    }
+
+    <div class="card" style="margin-bottom: var(--space-3);">
+      <div class="form-row">
+        <div class="field">
+          <label for="filterType">Категория</label>
+          <select id="filterType" class="input" [formControl]="filterType">
+            <option value="">Всички</option>
+            <option value="Protocol">Протокол</option>
+            <option value="Contract">Договор</option>
+            <option value="Invoice">Фактура</option>
+            <option value="Other">Друго</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="filterFrom">От дата</label>
+          <input id="filterFrom" class="input" type="date" [formControl]="filterFrom" />
+        </div>
+        <div class="field">
+          <label for="filterTo">До дата</label>
+          <input id="filterTo" class="input" type="date" [formControl]="filterTo" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-secondary btn-block" (click)="applyFilters()">Филтрирай</button>
+    </div>
+
+    @if (isManager) {
+      <div class="section-title">
+        <h3>Документи</h3>
+        <button type="button" class="btn btn-secondary btn-sm" (click)="toggleUpload()">
+          {{ uploadOpen() ? 'Затвори' : '+ Качи документ' }}
+        </button>
+      </div>
+
+      @if (uploadOpen()) {
+        <div class="card" style="margin-bottom: var(--space-3);">
+          <form [formGroup]="uploadForm" (ngSubmit)="submitUpload()" novalidate>
+            <div class="field">
+              <label for="uploadFile">Файл (PDF или изображение, до 10 MB)</label>
+              <input id="uploadFile" class="input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" (change)="onFileSelected($event)" />
+            </div>
+            <div class="form-row">
+              <div class="field">
+                <label for="uploadType">Категория</label>
+                <select id="uploadType" class="input" formControlName="type">
+                  <option value="Protocol">Протокол</option>
+                  <option value="Contract">Договор</option>
+                  <option value="Invoice">Фактура</option>
+                  <option value="Other">Друго</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="uploadAccess">Достъп</label>
+                <select id="uploadAccess" class="input" formControlName="access">
+                  <option value="All">Публичен за всички собственици</option>
+                  <option value="ManagerOnly">Само домоуправител</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" [disabled]="uploading()">
+              {{ uploading() ? 'Качване…' : 'Качи' }}
+            </button>
+          </form>
+        </div>
+      }
+    } @else {
+      <div class="section-label"><span>Документи</span></div>
+    }
+
+    @if (documentsLoading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (documents().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма документи.</p>
+    } @else {
+      <div class="list-stack">
+        @for (doc of documents(); track doc.id) {
+          <div class="card due-row">
+            <div>
+              <div style="font-weight: 600; font-size: 14.5px;">{{ doc.fileName }}</div>
+              <div class="due-row-meta">
+                {{ typeLabels[doc.type] }} &middot; {{ doc.uploadedAt | date: 'dd.MM.yyyy' }}
+                @if (isManager) {
+                  &middot; {{ accessLabels[doc.access] }}
+                }
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-secondary btn-sm" (click)="download(doc)">Свали</button>
+              @if (isManager) {
+                <button type="button" class="btn btn-secondary btn-sm icon-btn-reject" (click)="deleteDocument(doc)">Изтрий</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
