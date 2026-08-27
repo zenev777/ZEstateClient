@@ -215,8 +215,10 @@
               </div>
               <span class="tag tag-accent">{{ apartment.budget | number: '1.2-2' }} лв.</span>
             </div>
-            <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
               <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(apartment)">Редакция</button>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="startTransfer(apartment)">Прехвърли</button>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="toggleHistory(apartment)">История</button>
               <button
                 type="button"
                 class="btn btn-secondary btn-sm icon-btn-reject"
@@ -226,6 +228,53 @@
                 Изтрий
               </button>
             </div>
+
+            @if (transferResultByApartmentId()[apartment.id]) {
+              <p class="field-hint" style="margin-top: 6px;">{{ transferResultByApartmentId()[apartment.id] }}</p>
+            }
+
+            @if (transferFormOpenId() === apartment.id) {
+              <div class="hr"></div>
+              <p class="card-meta" style="margin-bottom: 6px;">
+                Текущият собственик ще загуби достъп. Новият собственик се регистрира отделно през кода за покана на сградата, като въведе същия номер апартамент.
+              </p>
+              <div class="field">
+                <label for="debtHandling{{ apartment.id }}">Неплатени задължения</label>
+                <select id="debtHandling{{ apartment.id }}" class="input" [formControl]="debtHandlingControl">
+                  <option value="TransfersToNewOwner">Преминават към новия собственик</option>
+                  <option value="StaysWithPreviousOwner">Остават за стария собственик</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  style="flex: 1;"
+                  [disabled]="transferring()"
+                  (click)="confirmTransfer(apartment)"
+                >
+                  {{ transferring() ? 'Прехвърляне…' : 'Потвърди прехвърлянето' }}
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" (click)="cancelTransfer()">Отказ</button>
+              </div>
+            }
+
+            @if (historyOpenId() === apartment.id) {
+              <div class="hr"></div>
+              @if (historyFor(apartment.id).length === 0) {
+                <p class="text-muted" style="font-size: 13px;">Няма прехвърляния още.</p>
+              } @else {
+                @for (record of historyFor(apartment.id); track record.id) {
+                  <div class="card-meta" style="padding: 4px 0;">
+                    {{ record.transferredAt | date: 'dd.MM.yyyy' }} &middot;
+                    {{ record.previousOwnerName ?? 'без активен собственик' }} → нов собственик &middot;
+                    от {{ record.transferredByName }} &middot;
+                    {{ record.debtHandling === 1 ? 'дългът остана за стария' : 'дългът премина към новия' }}
+                    ({{ record.outstandingBalanceAtTransfer | number: '1.2-2' }} лв.)
+                  </div>
+                }
+              }
+            }
           </div>
         }
       </div>

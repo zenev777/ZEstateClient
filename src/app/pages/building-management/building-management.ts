@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BuildingService } from '../../core/services/building.service';
 import { ApartmentSummary, BuildingSummary, InviteCodeLogEntry } from '../../core/models/auth.models';
+import { ApartmentTransferRecord } from '../../core/models/apartment-transfer.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 @Component({
@@ -48,6 +49,14 @@ export class BuildingManagement implements OnInit {
   readonly formSubmitting = signal(false);
   readonly formError = signal<string | null>(null);
   readonly deletingId = signal<number | null>(null);
+
+  readonly transferFormOpenId = signal<number | null>(null);
+  readonly transferring = signal(false);
+  readonly transferResultByApartmentId = signal<Record<number, string>>({});
+  readonly debtHandlingControl = this.fb.nonNullable.control<'TransfersToNewOwner' | 'StaysWithPreviousOwner'>('TransfersToNewOwner');
+
+  readonly historyOpenId = signal<number | null>(null);
+  readonly historyByApartmentId = signal<Record<number, ApartmentTransferRecord[]>>({});
 
   readonly buildingForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -305,5 +314,56 @@ export class BuildingManagement implements OnInit {
         this.apartmentsError.set(err.message);
       },
     });
+  }
+
+  startTransfer(apartment: ApartmentSummary): void {
+    this.debtHandlingControl.setValue('TransfersToNewOwner');
+    this.transferFormOpenId.set(apartment.id);
+  }
+
+  cancelTransfer(): void {
+    this.transferFormOpenId.set(null);
+  }
+
+  confirmTransfer(apartment: ApartmentSummary): void {
+    if (!confirm(`Апартамент ${apartment.number}: текущият собственик ще загуби достъп. Продължи?`)) {
+      return;
+    }
+
+    this.transferring.set(true);
+    this.buildingService.transferApartment(apartment.id, this.debtHandlingControl.value).subscribe({
+      next: (result) => {
+        this.transferring.set(false);
+        this.transferFormOpenId.set(null);
+        this.transferResultByApartmentId.update((map) => ({
+          ...map,
+          [apartment.id]: `Прехвърлен. Неплатени задължения при прехвърлянето: ${result.outstandingBalance.toFixed(2)} лв.`,
+        }));
+        this.loadApartments();
+      },
+      error: (err: Error) => {
+        this.transferring.set(false);
+        this.apartmentsError.set(err.message);
+      },
+    });
+  }
+
+  toggleHistory(apartment: ApartmentSummary): void {
+    if (this.historyOpenId() === apartment.id) {
+      this.historyOpenId.set(null);
+      return;
+    }
+
+    this.historyOpenId.set(apartment.id);
+    if (!this.historyByApartmentId()[apartment.id]) {
+      this.buildingService.getApartmentTransfers(apartment.id).subscribe({
+        next: (records) => this.historyByApartmentId.update((map) => ({ ...map, [apartment.id]: records })),
+        error: () => {},
+      });
+    }
+  }
+
+  historyFor(apartmentId: number): ApartmentTransferRecord[] {
+    return this.historyByApartmentId()[apartmentId] ?? [];
   }
 }

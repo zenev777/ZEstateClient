@@ -12,6 +12,7 @@ import {
   JoinRequestSummary,
   UpdateBuildingRequest,
 } from '../models/auth.models';
+import { ApartmentTransferRecord, TransferApartmentResult } from '../models/apartment-transfer.models';
 
 @Injectable({ providedIn: 'root' })
 export class BuildingService {
@@ -94,6 +95,18 @@ export class BuildingService {
   updateQuorumThreshold(quorumThresholdPercent: number): Observable<BuildingSummary> {
     return this.http
       .put<BuildingSummary>(`${this.baseUrl}/buildings/my/quorum-threshold`, { quorumThresholdPercent })
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  transferApartment(id: number, debtHandling: 'TransfersToNewOwner' | 'StaysWithPreviousOwner'): Observable<TransferApartmentResult> {
+    return this.http
+      .post<TransferApartmentResult>(`${this.baseUrl}/buildings/my/apartments/${id}/transfer`, { debtHandling })
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
+  getApartmentTransfers(id: number): Observable<ApartmentTransferRecord[]> {
+    return this.http
+      .get<ApartmentTransferRecord[]>(`${this.baseUrl}/buildings/my/apartments/${id}/transfers`)
       .pipe(catchError(this.rethrowWithMessage));
   }
 
