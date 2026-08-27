@@ -220,8 +220,15 @@
                       </div>
                       <div class="card-meta" style="margin-top: 4px;">
                         Да {{ q.result.yesPercent }}% &middot; Не {{ q.result.noPercent }}% &middot; Без мнение {{ q.result.abstainPercent }}%
-                        &middot; участие {{ q.result.turnoutPercent }}%
+                        &middot; участие {{ q.result.turnoutPercent }}% (изисква се {{ q.result.quorumThresholdPercent }}%)
                       </div>
+                      @if (q.result.isValid === true) {
+                        <span class="tag tag-success" style="margin-top: 4px;">Кворум постигнат — валидно</span>
+                      } @else if (q.result.isValid === false) {
+                        <span class="tag tag-danger" style="margin-top: 4px;">Няма кворум — решението е невалидно</span>
+                      } @else if (!q.result.quorumMet) {
+                        <span class="tag" style="margin-top: 4px;">Все още няма кворум</span>
+                      }
                     </div>
                   </div>
                 }

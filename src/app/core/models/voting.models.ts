@@ -10,6 +10,9 @@ export interface VoteResult {
   noPercent: number;
   abstainPercent: number;
   turnoutPercent: number;
+  quorumThresholdPercent: number;
+  quorumMet: boolean;
+  isValid: boolean | null;
 }
 
 export interface VoteQuestionSummary {

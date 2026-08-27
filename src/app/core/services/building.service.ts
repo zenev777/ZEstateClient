@@ -91,6 +91,12 @@ export class BuildingService {
       .pipe(catchError(this.rethrowWithMessage));
   }
 
+  updateQuorumThreshold(quorumThresholdPercent: number): Observable<BuildingSummary> {
+    return this.http
+      .put<BuildingSummary>(`${this.baseUrl}/buildings/my/quorum-threshold`, { quorumThresholdPercent })
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
   private rethrowWithMessage(error: HttpErrorResponse) {
     const body = error.error;
     let message = 'Възникна неочаквана грешка. Опитай отново.';

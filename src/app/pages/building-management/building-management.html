@@ -132,6 +132,22 @@
       </div>
     }
 
+    <div class="section-label"><span>Кворум при гласувания</span></div>
+    <div class="card" style="margin-bottom: var(--space-3);">
+      <div class="card-meta" style="margin-bottom: 8px;">
+        Минимален процент идеални части, които трябва да гласуват, за да е валидно решението (по подразбиране 50% — ЗУЕС).
+      </div>
+      <div style="display: flex; gap: 8px; align-items: flex-end;">
+        <div class="field" style="flex: 1; margin-bottom: 0;">
+          <label for="quorumThreshold">Праг (%)</label>
+          <input id="quorumThreshold" class="input" type="number" min="1" max="100" [formControl]="quorumControl" />
+        </div>
+        <button type="button" class="btn btn-secondary" [disabled]="quorumSaving()" (click)="saveQuorumThreshold()">
+          {{ quorumSaving() ? 'Запазване…' : 'Запази' }}
+        </button>
+      </div>
+    </div>
+
     <div class="section-title">
       <h3>Апартаменти</h3>
       @if (!formOpen()) {
