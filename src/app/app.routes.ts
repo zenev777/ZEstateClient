@@ -84,5 +84,11 @@ export const routes: Routes = [
       import('./pages/repair-management/repair-management').then((m) => m.RepairManagement),
     canActivate: [authGuard],
   },
+  {
+    path: 'dashboard/reports',
+    loadComponent: () =>
+      import('./pages/financial-reports/financial-reports').then((m) => m.FinancialReports),
+    canActivate: [authGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

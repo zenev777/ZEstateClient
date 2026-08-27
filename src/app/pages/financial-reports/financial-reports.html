@@ -1,0 +1,126 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Финансови отчети</div>
+          <div class="app-subtitle">Приходи, разходи и салдо</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: var(--space-3);">
+      <form [formGroup]="filterForm" (ngSubmit)="loadSummary()" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="reportFrom">От дата</label>
+            <input id="reportFrom" class="input" type="date" formControlName="from" />
+          </div>
+          <div class="field">
+            <label for="reportTo">До дата</label>
+            <input id="reportTo" class="input" type="date" formControlName="to" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1;" [disabled]="loading()">Приложи</button>
+          <button type="button" class="btn btn-secondary" [disabled]="exporting()" (click)="exportCsv()">
+            {{ exporting() ? 'Изтегляне…' : 'Изтегли CSV' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    @if (error()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (summary(); as s) {
+      <div class="stat-grid" style="margin-bottom: var(--space-3);">
+        <div class="stat-card">
+          <span class="stat-card-label">Приходи</span>
+          <span class="stat-card-value">{{ s.totalIncome | number: '1.2-2' }} лв.</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Разходи</span>
+          <span class="stat-card-value">{{ s.totalExpense | number: '1.2-2' }} лв.</span>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom: var(--space-3); text-align: center;">
+        <span class="card-meta">Салдо за периода</span>
+        <div style="font-size: 24px; font-weight: 700;" [style.color]="s.balance >= 0 ? 'var(--color-success)' : 'var(--color-danger)'">
+          {{ s.balance | number: '1.2-2' }} лв.
+        </div>
+      </div>
+
+      <div class="section-label"><span>Салдо по месеци (последните 12)</span></div>
+      <div class="card" style="margin-bottom: var(--space-3);">
+        <div style="display: flex; align-items: flex-end; gap: 4px; height: 100px;">
+          @for (bar of chartBars(); track bar.period) {
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%;">
+              <div
+                [style.height.%]="bar.heightPct"
+                [style.background]="bar.positive ? 'var(--color-success)' : 'var(--color-danger)'"
+                style="width: 100%; border-radius: 3px 3px 0 0; min-height: 2px;"
+                [title]="bar.period + ': ' + (bar.balance | number: '1.2-2') + ' лв.'"
+              ></div>
+            </div>
+          }
+        </div>
+        <div style="display: flex; gap: 4px; margin-top: 4px;">
+          @for (bar of chartBars(); track bar.period) {
+            <div style="flex: 1; text-align: center; font-size: 10px; color: var(--color-text-muted);">{{ bar.period }}</div>
+          }
+        </div>
+      </div>
+
+      <div class="section-label"><span>Приходи по апартамент</span></div>
+      <div class="list-stack" style="margin-bottom: var(--space-3);">
+        @if (s.incomeByApartment.length === 0) {
+          <p class="text-muted" style="text-align: center; padding: 12px 0;">Няма плащания за периода.</p>
+        }
+        @for (row of s.incomeByApartment; track row.apartmentNumber) {
+          <div class="card due-row">
+            <span>Апартамент {{ row.apartmentNumber }}</span>
+            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} лв.</span>
+          </div>
+        }
+      </div>
+
+      <div class="section-label"><span>Приходи по тип такса</span></div>
+      <div class="list-stack" style="margin-bottom: var(--space-3);">
+        @if (s.incomeByFeeType.length === 0) {
+          <p class="text-muted" style="text-align: center; padding: 12px 0;">Няма данни.</p>
+        }
+        @for (row of s.incomeByFeeType; track row.feeType) {
+          <div class="card due-row">
+            <span>{{ feeTypeLabels[row.feeType] }}</span>
+            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} лв.</span>
+          </div>
+        }
+      </div>
+
+      <div class="section-label"><span>Разходи по ремонт</span></div>
+      <div class="list-stack">
+        @if (s.expensesByRepair.length === 0) {
+          <p class="text-muted" style="text-align: center; padding: 12px 0;">Няма завършени ремонти за периода.</p>
+        }
+        @for (row of s.expensesByRepair; track row.id) {
+          <div class="card due-row">
+            <span>{{ row.title }}</span>
+            <span class="due-row-amount">{{ row.amount | number: '1.2-2' }} лв.</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
