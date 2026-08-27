@@ -131,4 +131,5 @@ export interface MeResponse {
   buildingName?: string | null;
   apartmentNumber?: string | null;
   canRetry?: boolean;
+  rejectionReason?: string | null;
 }
