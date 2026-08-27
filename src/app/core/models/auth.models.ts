@@ -68,7 +68,7 @@ export interface InviteCodeLimitsRequest {
   maxUses: number | null;
 }
 
-// Съответства на ZEstate.Infrastructure.Data.Enums.InviteCodeAction (сериализира се като число)
+// Mirrors ZEstate.Infrastructure.Data.Enums.InviteCodeAction (serialized as a number)
 export interface InviteCodeLogEntry {
   id: number;
   action: number;
