@@ -42,8 +42,8 @@
       </div>
     }
 
-    <form (ngSubmit)="send()" novalidate style="display: flex; gap: 8px;">
-      <input class="input" style="flex: 1;" [formControl]="messageControl" placeholder="Напиши съобщение…" (keyup.enter)="send()" />
+    <form [formGroup]="form" (ngSubmit)="send()" novalidate style="display: flex; gap: 8px;">
+      <input class="input" style="flex: 1;" formControlName="message" placeholder="Напиши съобщение…" />
       <button type="submit" class="btn btn-primary" [disabled]="sending()">Изпрати</button>
     </form>
   </div>

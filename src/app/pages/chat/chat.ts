@@ -30,6 +30,10 @@ export class Chat implements OnInit, OnDestroy {
   readonly sending = signal(false);
 
   readonly messageControl = this.fb.nonNullable.control('', [Validators.required, Validators.maxLength(1000)]);
+  // Wrapping the control in a FormGroup gives the <form> a [formGroup] directive,
+  // which is what actually provides the (ngSubmit) output under ReactiveFormsModule -
+  // without it, submit falls through to the browser's native (page-reloading) submit.
+  readonly form = this.fb.group({ message: this.messageControl });
 
   ngOnInit(): void {
     this.chatService.getMessages().subscribe({
