@@ -4,4 +4,5 @@ export interface ChatMessageItem {
   sentAt: string;
   senderId: string;
   senderName: string;
+  senderRole: string;
 }

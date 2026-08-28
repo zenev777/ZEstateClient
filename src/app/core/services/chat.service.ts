@@ -18,7 +18,6 @@ export class ChatService {
   private connection: signalR.HubConnection | null = null;
 
   readonly messageReceived = new Subject<ChatMessageItem>();
-  readonly messageDeleted = new Subject<number>();
 
   getMessages(): Observable<ChatMessageItem[]> {
     return this.http
@@ -29,12 +28,6 @@ export class ChatService {
   sendMessage(message: string): Observable<ChatMessageItem> {
     return this.http
       .post<ChatMessageItem>(`${this.baseUrl}/chat/messages`, { message })
-      .pipe(catchError(rethrowWithMessage));
-  }
-
-  deleteMessage(id: number): Observable<{ message: string }> {
-    return this.http
-      .delete<{ message: string }>(`${this.baseUrl}/chat/messages/${id}`)
       .pipe(catchError(rethrowWithMessage));
   }
 
@@ -50,7 +43,6 @@ export class ChatService {
       .build();
 
     this.connection.on('ReceiveMessage', (item: ChatMessageItem) => this.messageReceived.next(item));
-    this.connection.on('MessageDeleted', (id: number) => this.messageDeleted.next(id));
 
     await this.connection.start();
   }

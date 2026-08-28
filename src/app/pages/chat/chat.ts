@@ -8,6 +8,13 @@ import { SessionService } from '../../core/services/session.service';
 import { ChatMessageItem } from '../../core/models/chat.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
+const ROLE_LABELS: Record<string, string> = {
+  HouseManager: 'Домоуправител',
+  Cashier: 'Касиер',
+  Administrator: 'Администратор',
+  Resident: 'Живущ',
+};
+
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -21,7 +28,6 @@ export class Chat implements OnInit, OnDestroy {
   private readonly session = inject(SessionService);
   private readonly subscriptions = new Subscription();
 
-  readonly isManager = this.session.hasRole('HouseManager');
   readonly currentUserName = this.session.getName();
 
   readonly loading = signal(true);
@@ -55,12 +61,6 @@ export class Chat implements OnInit, OnDestroy {
       }),
     );
 
-    this.subscriptions.add(
-      this.chatService.messageDeleted.subscribe((id) => {
-        this.messages.update((list) => list.filter((m) => m.id !== id));
-      }),
-    );
-
     this.chatService.connect().catch(() => this.error.set('Неуспешна връзка за съобщения в реално време.'));
   }
 
@@ -71,6 +71,14 @@ export class Chat implements OnInit, OnDestroy {
 
   back(): void {
     this.router.navigateByUrl('/dashboard');
+  }
+
+  isMine(item: ChatMessageItem): boolean {
+    return item.senderName === this.currentUserName;
+  }
+
+  roleLabel(role: string): string {
+    return ROLE_LABELS[role] ?? role;
   }
 
   send(): void {
@@ -94,16 +102,6 @@ export class Chat implements OnInit, OnDestroy {
         this.sending.set(false);
         this.error.set(err.message);
       },
-    });
-  }
-
-  deleteMessage(item: ChatMessageItem): void {
-    if (!confirm('Да изтрия ли това съобщение?')) {
-      return;
-    }
-
-    this.chatService.deleteMessage(item.id).subscribe({
-      error: (err: Error) => this.error.set(err.message),
     });
   }
 }
