@@ -1,7 +1,8 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FeeService } from '../../core/services/fee.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 import { ObligationSummary } from '../../core/models/fee.models';
 
@@ -15,11 +16,15 @@ const OBLIGATION_STATUS_PAID = 2;
 })
 export class FeesHistory implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly feeService = inject(FeeService);
+  private readonly paymentService = inject(PaymentService);
 
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly obligations = signal<ObligationSummary[]>([]);
+  readonly payingId = signal<number | null>(null);
+  readonly checkoutNotice = signal<'success' | 'cancel' | null>(null);
 
   get dueTotal(): number {
     return this.obligations()
@@ -38,6 +43,11 @@ export class FeesHistory implements OnInit {
   }
 
   ngOnInit(): void {
+    const checkout = this.route.snapshot.queryParamMap.get('checkout');
+    if (checkout === 'success' || checkout === 'cancel') {
+      this.checkoutNotice.set(checkout);
+    }
+
     this.load();
   }
 
@@ -52,6 +62,21 @@ export class FeesHistory implements OnInit {
       error: (err: Error) => {
         this.errorMessage.set(err.message);
         this.loading.set(false);
+      },
+    });
+  }
+
+  pay(obligation: ObligationSummary): void {
+    this.payingId.set(obligation.id);
+    this.errorMessage.set(null);
+
+    this.paymentService.createCheckout(obligation.id).subscribe({
+      next: ({ checkoutUrl }) => {
+        window.location.href = checkoutUrl;
+      },
+      error: (err: Error) => {
+        this.payingId.set(null);
+        this.errorMessage.set(err.message);
       },
     });
   }

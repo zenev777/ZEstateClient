@@ -39,6 +39,11 @@ export class BuildingManagement implements OnInit {
   readonly quorumSaving = signal(false);
   readonly quorumControl = this.fb.nonNullable.control(50);
 
+  readonly ibanSaving = signal(false);
+  readonly ibanError = signal<string | null>(null);
+  readonly ibanSaved = signal(false);
+  readonly ibanControl = this.fb.nonNullable.control('');
+
   readonly apartmentsLoading = signal(true);
   readonly apartments = signal<ApartmentSummary[]>([]);
   readonly idealPartsTotal = signal(0);
@@ -100,6 +105,7 @@ export class BuildingManagement implements OnInit {
       maxUses: building.inviteCodeMaxUses,
     });
     this.quorumControl.setValue(building.quorumThresholdPercent);
+    this.ibanControl.setValue(building.iban ?? '');
   }
 
   saveQuorumThreshold(): void {
@@ -110,6 +116,24 @@ export class BuildingManagement implements OnInit {
         this.applyBuilding(building);
       },
       error: () => this.quorumSaving.set(false),
+    });
+  }
+
+  saveIban(): void {
+    this.ibanSaving.set(true);
+    this.ibanError.set(null);
+    this.ibanSaved.set(false);
+
+    this.buildingService.updateIban(this.ibanControl.value.trim()).subscribe({
+      next: (building) => {
+        this.ibanSaving.set(false);
+        this.ibanSaved.set(true);
+        this.applyBuilding(building);
+      },
+      error: (err: Error) => {
+        this.ibanSaving.set(false);
+        this.ibanError.set(err.message);
+      },
     });
   }
 

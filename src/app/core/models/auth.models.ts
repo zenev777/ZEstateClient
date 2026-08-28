@@ -73,6 +73,7 @@ export interface BuildingSummary {
   inviteCodeMaxUses: number | null;
   inviteCodeUseCount: number;
   quorumThresholdPercent: number;
+  iban: string | null;
 }
 
 export interface InviteCodeLimitsRequest {
