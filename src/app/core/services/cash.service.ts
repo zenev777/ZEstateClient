@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { rethrowWithMessage } from '../utils/http-error.util';
-import { CashBalances, CashLedgerEntry, TransferFundsRequest } from '../models/cash.models';
+import { CashBalances, CashLedgerEntry, TransferFundsRequest, WithdrawForRepairRequest } from '../models/cash.models';
 
 @Injectable({ providedIn: 'root' })
 export class CashService {
@@ -26,6 +26,12 @@ export class CashService {
   getHistory(): Observable<CashLedgerEntry[]> {
     return this.http
       .get<CashLedgerEntry[]>(`${this.baseUrl}/cash/history`)
+      .pipe(catchError(rethrowWithMessage));
+  }
+
+  withdrawForRepair(request: WithdrawForRepairRequest): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.baseUrl}/cash/withdraw-for-repair`, request)
       .pipe(catchError(rethrowWithMessage));
   }
 }

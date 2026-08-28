@@ -9,6 +9,13 @@ export interface TransferFundsRequest {
   note?: string | null;
 }
 
+export interface WithdrawForRepairRequest {
+  account: 'Cash' | 'Bank';
+  amount: number;
+  repairId: number;
+  note?: string | null;
+}
+
 export interface CashLedgerEntry {
   id: number;
   // CashAccountType: Cash = 0, Bank = 1

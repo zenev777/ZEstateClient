@@ -2,6 +2,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CashService } from '../../core/services/cash.service';
 import { RepairService } from '../../core/services/repair.service';
 import { SessionService } from '../../core/services/session.service';
 import { RepairDocument, RepairSummary } from '../../core/models/repair.models';
@@ -18,6 +19,7 @@ const REPAIR_STATUS_LABELS = ['Планиран', 'В процес', 'Завър
 export class RepairManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly cashService = inject(CashService);
   private readonly repairService = inject(RepairService);
   private readonly session = inject(SessionService);
 
@@ -39,10 +41,20 @@ export class RepairManagement implements OnInit {
   readonly documentsByRepairId = signal<Record<number, RepairDocument[]>>({});
   readonly uploadingId = signal<number | null>(null);
 
+  readonly withdrawOpenFor = signal<number | null>(null);
+  readonly withdrawSubmitting = signal(false);
+  readonly withdrawError = signal<string | null>(null);
+
   readonly createForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(150)]],
     description: [''],
     budget: [0, [Validators.required, Validators.min(0.01)]],
+  });
+
+  readonly withdrawForm = this.fb.nonNullable.group({
+    account: ['Cash' as 'Cash' | 'Bank', Validators.required],
+    amount: [0, [Validators.required, Validators.min(0.01)]],
+    note: [''],
   });
 
   readonly editForm = this.fb.nonNullable.group({
@@ -236,6 +248,42 @@ export class RepairManagement implements OnInit {
         input.value = '';
       },
     });
+  }
+
+  toggleWithdraw(repair: RepairSummary): void {
+    if (this.withdrawOpenFor() === repair.id) {
+      this.withdrawOpenFor.set(null);
+      return;
+    }
+
+    this.withdrawForm.reset({ account: 'Cash', amount: 0, note: '' });
+    this.withdrawError.set(null);
+    this.withdrawOpenFor.set(repair.id);
+  }
+
+  submitWithdraw(repair: RepairSummary): void {
+    if (this.withdrawForm.invalid) {
+      this.withdrawForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.withdrawForm.getRawValue();
+    this.withdrawSubmitting.set(true);
+    this.withdrawError.set(null);
+
+    this.cashService
+      .withdrawForRepair({ account: raw.account, amount: raw.amount, repairId: repair.id, note: raw.note || null })
+      .subscribe({
+        next: () => {
+          this.withdrawSubmitting.set(false);
+          this.withdrawOpenFor.set(null);
+          this.loadRepairs();
+        },
+        error: (err: Error) => {
+          this.withdrawSubmitting.set(false);
+          this.withdrawError.set(err.message);
+        },
+      });
   }
 
   downloadDocument(doc: RepairDocument): void {
