@@ -43,6 +43,18 @@ export interface GenerateObligationsResult {
   skippedExisting: number;
 }
 
+export interface ObligationPreviewFeeItem {
+  feeTitle: string;
+  apartmentCount: number;
+  totalAmount: number;
+}
+
+export interface ObligationGenerationPreview {
+  apartmentCount: number;
+  totalAmount: number;
+  fees: ObligationPreviewFeeItem[];
+}
+
 export interface ObligationStatusCount {
   count: number;
   total: number;

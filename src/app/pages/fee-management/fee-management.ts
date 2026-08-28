@@ -3,7 +3,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FeeService } from '../../core/services/fee.service';
-import { FeeSummary, ObligationSummary, ObligationsSummary } from '../../core/models/fee.models';
+import {
+  FeeSummary,
+  ObligationGenerationPreview,
+  ObligationSummary,
+  ObligationsSummary,
+} from '../../core/models/fee.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 const FEE_TYPE_LABELS = ['Фиксирана сума', 'По идеални части'];
@@ -195,8 +200,38 @@ export class FeeManagement implements OnInit {
   }
 
   generateObligations(): void {
-    this.generating.set(true);
     this.generateResult.set(null);
+    this.generating.set(true);
+
+    this.feeService.previewObligations().subscribe({
+      next: (preview) => this.confirmAndGenerate(preview),
+      error: (err: Error) => {
+        this.generating.set(false);
+        this.generateResult.set(err.message);
+      },
+    });
+  }
+
+  private confirmAndGenerate(preview: ObligationGenerationPreview): void {
+    if (preview.apartmentCount === 0) {
+      this.generating.set(false);
+      this.generateResult.set('Няма нови задължения за генериране — всичко за текущия период вече е генерирано.');
+      return;
+    }
+
+    const breakdown = preview.fees
+      .map((f) => `  • ${f.feeTitle}: ${f.apartmentCount} апартамента, ${f.totalAmount.toFixed(2)} €`)
+      .join('\n');
+
+    const message =
+      `Ще се генерират задължения за ${preview.apartmentCount} апартамента на обща стойност ${preview.totalAmount.toFixed(2)} €:\n\n` +
+      `${breakdown}\n\n` +
+      `Това действие НЕ МОЖЕ да бъде отменено. Продължи?`;
+
+    if (!confirm(message)) {
+      this.generating.set(false);
+      return;
+    }
 
     this.feeService.generateObligations().subscribe({
       next: (result) => {
