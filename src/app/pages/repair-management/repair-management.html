@@ -120,6 +120,11 @@
                   <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(repair)">Редакция</button>
                 }
                 <button type="button" class="btn btn-secondary btn-sm" (click)="toggleDocuments(repair)">Фактури</button>
+                @if (isManager && !repair.costsAllocated) {
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="toggleWithdraw(repair)">
+                    {{ withdrawOpenFor() === repair.id ? 'Затвори' : 'Тегли за ремонта' }}
+                  </button>
+                }
                 @if (isManager && !repair.costsAllocated && repair.status !== 0) {
                   <button
                     type="button"
@@ -141,6 +146,33 @@
                   </button>
                 }
               </div>
+
+              @if (withdrawOpenFor() === repair.id) {
+                <div class="hr"></div>
+                @if (withdrawError()) {
+                  <div class="alert alert-error">{{ withdrawError() }}</div>
+                }
+                <form [formGroup]="withdrawForm" (ngSubmit)="submitWithdraw(repair)" novalidate>
+                  <div class="field">
+                    <label for="withdrawAccount{{ repair.id }}">От каса</label>
+                    <select id="withdrawAccount{{ repair.id }}" class="input" formControlName="account">
+                      <option value="Cash">В брой</option>
+                      <option value="Bank">По банка</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="withdrawAmount{{ repair.id }}">Сума (€)</label>
+                    <input id="withdrawAmount{{ repair.id }}" class="input" type="number" step="0.01" formControlName="amount" />
+                  </div>
+                  <div class="field">
+                    <label for="withdrawNote{{ repair.id }}">Бележка (по избор)</label>
+                    <input id="withdrawNote{{ repair.id }}" class="input" formControlName="note" />
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-block" [disabled]="withdrawSubmitting()">
+                    {{ withdrawSubmitting() ? 'Записване…' : 'Тегли' }}
+                  </button>
+                </form>
+              }
 
               @if (expandedId() === repair.id) {
                 <div class="hr"></div>
