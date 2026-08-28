@@ -1,8 +1,9 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable, Subject, catchError, throwError } from 'rxjs';
+import { Observable, Subject, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { rethrowWithMessage } from '../utils/http-error.util';
 import { ChatMessageItem } from '../models/chat.models';
 import { SessionService } from './session.service';
 
@@ -22,19 +23,19 @@ export class ChatService {
   getMessages(): Observable<ChatMessageItem[]> {
     return this.http
       .get<ChatMessageItem[]>(`${this.baseUrl}/chat/messages`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   sendMessage(message: string): Observable<ChatMessageItem> {
     return this.http
       .post<ChatMessageItem>(`${this.baseUrl}/chat/messages`, { message })
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   deleteMessage(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.baseUrl}/chat/messages/${id}`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   async connect(): Promise<void> {
@@ -59,22 +60,5 @@ export class ChatService {
       await this.connection.stop();
       this.connection = null;
     }
-  }
-
-  private rethrowWithMessage(error: HttpErrorResponse) {
-    const body = error.error;
-    let message = 'Възникна неочаквана грешка. Опитай отново.';
-
-    if (typeof body === 'string') {
-      message = body;
-    } else if (body?.message) {
-      message = body.message;
-    } else if (Array.isArray(body)) {
-      message = body.join(' ');
-    } else if (body?.errors) {
-      message = Object.values<string[]>(body.errors).flat().join(' ');
-    }
-
-    return throwError(() => new Error(message));
   }
 }

@@ -1,7 +1,8 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { rethrowWithMessage } from '../utils/http-error.util';
 import {
   ApartmentFormRequest,
   ApartmentListResponse,
@@ -35,95 +36,78 @@ export class BuildingService {
   getMyBuilding(): Observable<BuildingSummary> {
     return this.http
       .get<BuildingSummary>(`${this.baseUrl}/buildings/my`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   updateMyBuilding(request: UpdateBuildingRequest): Observable<BuildingSummary> {
     return this.http
       .put<BuildingSummary>(`${this.baseUrl}/buildings/my`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   getApartments(): Observable<ApartmentListResponse> {
     return this.http
       .get<ApartmentListResponse>(`${this.baseUrl}/buildings/my/apartments`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   createApartment(request: ApartmentFormRequest): Observable<ApartmentSummary> {
     return this.http
       .post<ApartmentSummary>(`${this.baseUrl}/buildings/my/apartments`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   updateApartment(id: number, request: ApartmentFormRequest): Observable<ApartmentSummary> {
     return this.http
       .put<ApartmentSummary>(`${this.baseUrl}/buildings/my/apartments/${id}`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   deleteApartment(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.baseUrl}/buildings/my/apartments/${id}`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   regenerateInviteCode(): Observable<BuildingSummary> {
     return this.http
       .post<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/regenerate`, {})
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   revokeInviteCode(): Observable<BuildingSummary> {
     return this.http
       .post<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/revoke`, {})
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   updateInviteCodeLimits(request: InviteCodeLimitsRequest): Observable<BuildingSummary> {
     return this.http
       .put<BuildingSummary>(`${this.baseUrl}/buildings/my/invite-code/limits`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   getInviteCodeLog(): Observable<InviteCodeLogEntry[]> {
     return this.http
       .get<InviteCodeLogEntry[]>(`${this.baseUrl}/buildings/my/invite-code/log`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   updateQuorumThreshold(quorumThresholdPercent: number): Observable<BuildingSummary> {
     return this.http
       .put<BuildingSummary>(`${this.baseUrl}/buildings/my/quorum-threshold`, { quorumThresholdPercent })
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   transferApartment(id: number, debtHandling: 'TransfersToNewOwner' | 'StaysWithPreviousOwner'): Observable<TransferApartmentResult> {
     return this.http
       .post<TransferApartmentResult>(`${this.baseUrl}/buildings/my/apartments/${id}/transfer`, { debtHandling })
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   getApartmentTransfers(id: number): Observable<ApartmentTransferRecord[]> {
     return this.http
       .get<ApartmentTransferRecord[]>(`${this.baseUrl}/buildings/my/apartments/${id}/transfers`)
-      .pipe(catchError(this.rethrowWithMessage));
-  }
-
-  private rethrowWithMessage(error: HttpErrorResponse) {
-    const body = error.error;
-    let message = 'Възникна неочаквана грешка. Опитай отново.';
-
-    if (typeof body === 'string') {
-      message = body;
-    } else if (body?.message) {
-      message = body.message;
-    } else if (Array.isArray(body)) {
-      message = body.join(' ');
-    } else if (body?.errors) {
-      message = Object.values<string[]>(body.errors).flat().join(' ');
-    }
-
-    return throwError(() => new Error(message));
+      .pipe(catchError(rethrowWithMessage));
   }
 }

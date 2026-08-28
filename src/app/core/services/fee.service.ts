@@ -1,7 +1,8 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { rethrowWithMessage } from '../utils/http-error.util';
 import {
   FeeFormRequest,
   FeeSummary,
@@ -17,43 +18,43 @@ export class FeeService {
   constructor(private readonly http: HttpClient) {}
 
   getFees(): Observable<FeeSummary[]> {
-    return this.http.get<FeeSummary[]>(`${this.baseUrl}/fees`).pipe(catchError(this.rethrowWithMessage));
+    return this.http.get<FeeSummary[]>(`${this.baseUrl}/fees`).pipe(catchError(rethrowWithMessage));
   }
 
   createFee(request: FeeFormRequest): Observable<FeeSummary> {
     return this.http
       .post<FeeSummary>(`${this.baseUrl}/fees`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   updateFee(id: number, request: FeeFormRequest): Observable<FeeSummary> {
     return this.http
       .put<FeeSummary>(`${this.baseUrl}/fees/${id}`, request)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   deleteFee(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.baseUrl}/fees/${id}`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   generateObligations(): Observable<GenerateObligationsResult> {
     return this.http
       .post<GenerateObligationsResult>(`${this.baseUrl}/fees/generate-obligations`, {})
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   getObligations(): Observable<ObligationSummary[]> {
     return this.http
       .get<ObligationSummary[]>(`${this.baseUrl}/fees/obligations`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   getObligationsSummary(): Observable<ObligationsSummary> {
     return this.http
       .get<ObligationsSummary>(`${this.baseUrl}/fees/obligations/summary`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   // The caller's own obligations, regardless of role - unlike getObligations() above
@@ -61,29 +62,12 @@ export class FeeService {
   getMyObligations(): Observable<ObligationSummary[]> {
     return this.http
       .get<ObligationSummary[]>(`${this.baseUrl}/fees/my-obligations`)
-      .pipe(catchError(this.rethrowWithMessage));
+      .pipe(catchError(rethrowWithMessage));
   }
 
   markOverdue(): Observable<{ markedOverdue: number }> {
     return this.http
       .post<{ markedOverdue: number }>(`${this.baseUrl}/fees/mark-overdue`, {})
-      .pipe(catchError(this.rethrowWithMessage));
-  }
-
-  private rethrowWithMessage(error: HttpErrorResponse) {
-    const body = error.error;
-    let message = 'Възникна неочаквана грешка. Опитай отново.';
-
-    if (typeof body === 'string') {
-      message = body;
-    } else if (body?.message) {
-      message = body.message;
-    } else if (Array.isArray(body)) {
-      message = body.join(' ');
-    } else if (body?.errors) {
-      message = Object.values<string[]>(body.errors).flat().join(' ');
-    }
-
-    return throwError(() => new Error(message));
+      .pipe(catchError(rethrowWithMessage));
   }
 }
