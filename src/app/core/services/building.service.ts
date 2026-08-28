@@ -14,6 +14,7 @@ import {
   UpdateBuildingRequest,
 } from '../models/auth.models';
 import { ApartmentTransferRecord, TransferApartmentResult } from '../models/apartment-transfer.models';
+import { BuildingRegisterEntry } from '../models/building-register.models';
 
 @Injectable({ providedIn: 'root' })
 export class BuildingService {
@@ -114,6 +115,18 @@ export class BuildingService {
   getApartmentTransfers(id: number): Observable<ApartmentTransferRecord[]> {
     return this.http
       .get<ApartmentTransferRecord[]>(`${this.baseUrl}/buildings/my/apartments/${id}/transfers`)
+      .pipe(catchError(rethrowWithMessage));
+  }
+
+  getRegister(): Observable<BuildingRegisterEntry[]> {
+    return this.http
+      .get<BuildingRegisterEntry[]>(`${this.baseUrl}/buildings/my/register`)
+      .pipe(catchError(rethrowWithMessage));
+  }
+
+  exportRegister(): Observable<Blob> {
+    return this.http
+      .get(`${this.baseUrl}/buildings/my/register/export`, { responseType: 'blob' })
       .pipe(catchError(rethrowWithMessage));
   }
 }

@@ -1,0 +1,68 @@
+<div class="page-shell page-shell-nav">
+  <div class="page-frame">
+    <div class="app-header">
+      <div class="app-header-left">
+        <button type="button" class="app-header-action" aria-label="Назад" (click)="back()" style="margin-left: -8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div>
+          <div class="app-title">Домова книга</div>
+          <div class="app-subtitle">Консолидиран регистър на собствениците (чл. 7, чл. 23 ЗУЕС)</div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      style="width: 100%; margin-bottom: var(--space-3);"
+      [disabled]="exporting() || loading() || entries().length === 0"
+      (click)="exportCsv()"
+    >
+      {{ exporting() ? 'Изтегляне…' : 'Изтегли CSV' }}
+    </button>
+
+    @if (error()) {
+      <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ error() }}</div>
+    }
+
+    @if (loading()) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Зареждане…</p>
+    } @else if (entries().length === 0) {
+      <p class="text-muted" style="text-align: center; padding: 24px 0;">Няма апартаменти в сградата.</p>
+    } @else {
+      <div class="list-stack">
+        @for (entry of entries(); track entry.apartmentNumber) {
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div class="card-title">Апартамент {{ entry.apartmentNumber }}</div>
+              <div class="card-meta">Ет. {{ entry.floor }} &middot; {{ entry.idealParts | number: '1.0-2' }}% ид. части</div>
+            </div>
+
+            @if (entry.members.length === 0) {
+              <p class="text-muted" style="font-size: 13px; margin-top: 6px;">Няма регистрирани живущи.</p>
+            } @else {
+              <div class="hr"></div>
+              <div class="list-stack" style="gap: 8px;">
+                @for (member of entry.members; track member.email) {
+                  <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                    <div>
+                      <div style="font-weight: 600; font-size: 13.5px;">{{ member.name }}</div>
+                      <div class="card-meta">{{ member.email }} &middot; от {{ member.joinedAt | date: 'dd.MM.yyyy' }}</div>
+                    </div>
+                    <span class="tag tag-accent" style="font-size: 11.5px;">{{ roleLabel(member.role) }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-bottom-nav active="home" />
