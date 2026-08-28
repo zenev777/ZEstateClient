@@ -1,40 +1,59 @@
-import { DecimalPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { DatePipe, DecimalPipe } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { FeeService } from '../../core/services/fee.service';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
+import { ObligationSummary } from '../../core/models/fee.models';
 
-interface MockPayment {
-  title: string;
-  date: string;
-  amount: number;
-  status: 'Pending' | 'Paid';
-}
+const OBLIGATION_STATUS_PAID = 2;
 
 @Component({
   selector: 'app-fees-history',
   standalone: true,
-  imports: [DecimalPipe, BottomNav],
+  imports: [DecimalPipe, DatePipe, BottomNav],
   templateUrl: './fees-history.html',
 })
-export class FeesHistory {
+export class FeesHistory implements OnInit {
   private readonly router = inject(Router);
+  private readonly feeService = inject(FeeService);
 
-  // Mocked — no payments API yet.
-  readonly payments: MockPayment[] = [
-    { title: 'Месечна вноска — Ноември', date: '01 ноем. 2026', amount: 42, status: 'Pending' },
-    { title: 'Фонд Ремонт', date: '01 ноем. 2026', amount: 15, status: 'Pending' },
-    { title: 'Месечна вноска — Октомври', date: '01 окт. 2026', amount: 42, status: 'Paid' },
-    { title: 'Фонд Ремонт', date: '01 окт. 2026', amount: 15, status: 'Paid' },
-    { title: 'Месечна вноска — Септември', date: '01 сеп. 2026', amount: 42, status: 'Paid' },
-    { title: 'Извънредна вноска — авариен ремонт', date: '12 авг. 2026', amount: 80, status: 'Paid' },
-  ];
+  readonly loading = signal(true);
+  readonly errorMessage = signal<string | null>(null);
+  readonly obligations = signal<ObligationSummary[]>([]);
 
   get dueTotal(): number {
-    return this.payments.filter((p) => p.status === 'Pending').reduce((sum, p) => sum + p.amount, 0);
+    return this.obligations()
+      .filter((o) => o.status !== OBLIGATION_STATUS_PAID)
+      .reduce((sum, o) => sum + o.amount, 0);
   }
 
   get paidTotal(): number {
-    return this.payments.filter((p) => p.status === 'Paid').reduce((sum, p) => sum + p.amount, 0);
+    return this.obligations()
+      .filter((o) => o.status === OBLIGATION_STATUS_PAID)
+      .reduce((sum, o) => sum + o.amount, 0);
+  }
+
+  isPaid(o: ObligationSummary): boolean {
+    return o.status === OBLIGATION_STATUS_PAID;
+  }
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  load(): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
+    this.feeService.getMyObligations().subscribe({
+      next: (obligations) => {
+        this.obligations.set(obligations);
+        this.loading.set(false);
+      },
+      error: (err: Error) => {
+        this.errorMessage.set(err.message);
+        this.loading.set(false);
+      },
+    });
   }
 
   back(): void {
