@@ -70,8 +70,33 @@ export class MeetingManagement implements OnInit {
     status: ['Upcoming' as 'Upcoming' | 'Active' | 'Closed'],
   });
 
+  // Tracks whether the user has manually edited "Край" in the current form session -
+  // once they have, we stop overwriting it when "Начало" changes, so we don't clobber
+  // a deliberate choice.
+  private endDateTouched = false;
+  private endAtTouched = false;
+
   ngOnInit(): void {
     this.loadMeetings();
+
+    this.form.controls.endDate.valueChanges.subscribe(() => (this.endDateTouched = true));
+    this.form.controls.startDate.valueChanges.subscribe((value) => {
+      if (this.endDateTouched) return;
+      const start = new Date(value);
+      if (isNaN(start.getTime())) return;
+      this.form.controls.endDate.setValue(toLocalInput(new Date(start.getTime() + 60 * 60 * 1000)), { emitEvent: false });
+    });
+
+    this.questionForm.controls.endAt.valueChanges.subscribe(() => (this.endAtTouched = true));
+    this.questionForm.controls.startAt.valueChanges.subscribe((value) => {
+      if (this.endAtTouched) return;
+      const start = new Date(value);
+      if (isNaN(start.getTime())) return;
+      this.questionForm.controls.endAt.setValue(
+        toLocalInput(new Date(start.getTime() + 24 * 60 * 60 * 1000)),
+        { emitEvent: false },
+      );
+    });
   }
 
   back(): void {
@@ -95,32 +120,40 @@ export class MeetingManagement implements OnInit {
 
   startCreate(): void {
     this.editingId.set(null);
-    this.form.reset({
-      title: '',
-      description: '',
-      agenda: '',
-      startDate: toLocalInput(new Date()),
-      endDate: toLocalInput(new Date(Date.now() + 60 * 60 * 1000)),
-      location: '',
-      meetUrl: '',
-      status: 'Upcoming',
-    });
+    this.endDateTouched = false;
+    this.form.reset(
+      {
+        title: '',
+        description: '',
+        agenda: '',
+        startDate: toLocalInput(new Date()),
+        endDate: toLocalInput(new Date(Date.now() + 60 * 60 * 1000)),
+        location: '',
+        meetUrl: '',
+        status: 'Upcoming',
+      },
+      { emitEvent: false },
+    );
     this.formError.set(null);
     this.formOpen.set(true);
   }
 
   startEdit(meeting: MeetingSummary): void {
     this.editingId.set(meeting.id);
-    this.form.reset({
-      title: meeting.title,
-      description: meeting.description ?? '',
-      agenda: meeting.agenda ?? '',
-      startDate: meeting.startDate.slice(0, 16),
-      endDate: meeting.endDate.slice(0, 16),
-      location: meeting.location ?? '',
-      meetUrl: meeting.meetUrl ?? '',
-      status: (['Upcoming', 'Active', 'Closed'] as const)[meeting.status] ?? 'Upcoming',
-    });
+    this.endDateTouched = false;
+    this.form.reset(
+      {
+        title: meeting.title,
+        description: meeting.description ?? '',
+        agenda: meeting.agenda ?? '',
+        startDate: meeting.startDate.slice(0, 16),
+        endDate: meeting.endDate.slice(0, 16),
+        location: meeting.location ?? '',
+        meetUrl: meeting.meetUrl ?? '',
+        status: (['Upcoming', 'Active', 'Closed'] as const)[meeting.status] ?? 'Upcoming',
+      },
+      { emitEvent: false },
+    );
     this.formError.set(null);
     this.formOpen.set(true);
   }
@@ -276,11 +309,15 @@ export class MeetingManagement implements OnInit {
   }
 
   startCreateQuestion(meetingId: number): void {
-    this.questionForm.reset({
-      question: '',
-      startAt: toLocalInput(new Date()),
-      endAt: toLocalInput(new Date(Date.now() + 24 * 60 * 60 * 1000)),
-    });
+    this.endAtTouched = false;
+    this.questionForm.reset(
+      {
+        question: '',
+        startAt: toLocalInput(new Date()),
+        endAt: toLocalInput(new Date(Date.now() + 24 * 60 * 60 * 1000)),
+      },
+      { emitEvent: false },
+    );
     this.questionFormOpenFor.set(meetingId);
   }
 
