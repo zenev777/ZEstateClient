@@ -80,11 +80,9 @@ export class Dashboard implements OnInit {
 
     this.loadDues();
     this.loadUpcomingMeeting();
+    this.loadRepairs();
     if (this.canSeeFinancials) {
       this.loadFinancialSummary();
-    }
-    if (this.isManager) {
-      this.loadRepairs();
     }
   }
 
