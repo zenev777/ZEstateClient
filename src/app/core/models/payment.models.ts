@@ -3,6 +3,9 @@ export interface RegisterPaymentRequest {
   amount: number;
   paidAt: string;
   method: 'Manual' | 'Stripe';
+  // Which till the money actually landed in - only meaningful for 'Manual' (Stripe
+  // always lands in Bank server-side regardless of this); defaults to Cash if omitted.
+  account?: 'Cash' | 'Bank' | null;
   note?: string | null;
 }
 
