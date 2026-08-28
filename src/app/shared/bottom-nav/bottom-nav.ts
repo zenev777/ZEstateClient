@@ -8,5 +8,5 @@ import { RouterLink } from '@angular/router';
   templateUrl: './bottom-nav.html',
 })
 export class BottomNav {
-  readonly active = input<'home' | 'fees'>('home');
+  readonly active = input<'home' | 'fees' | 'chat'>('home');
 }
