@@ -39,6 +39,12 @@ export class BuildingService {
       .pipe(catchError(rethrowWithMessage));
   }
 
+  updateIban(iban: string): Observable<BuildingSummary> {
+    return this.http
+      .put<BuildingSummary>(`${this.baseUrl}/buildings/my/iban`, { iban })
+      .pipe(catchError(rethrowWithMessage));
+  }
+
   updateMyBuilding(request: UpdateBuildingRequest): Observable<BuildingSummary> {
     return this.http
       .put<BuildingSummary>(`${this.baseUrl}/buildings/my`, request)

@@ -148,6 +148,28 @@
       </div>
     </div>
 
+    <div class="section-label"><span>Онлайн плащания (Stripe)</span></div>
+    <div class="card" style="margin-bottom: var(--space-3);">
+      @if (ibanError()) {
+        <div class="alert alert-error">{{ ibanError() }}</div>
+      }
+      <div class="card-meta" style="margin-bottom: 8px;">
+        IBAN на сградата - задължителен, преди живущите да могат да плащат вноските си онлайн с карта. Не се показва на живущите.
+      </div>
+      <div style="display: flex; gap: 8px; align-items: flex-end;">
+        <div class="field" style="flex: 1; margin-bottom: 0;">
+          <label for="buildingIban">IBAN</label>
+          <input id="buildingIban" class="input" [formControl]="ibanControl" placeholder="BG80BNBG96611020345678" />
+        </div>
+        <button type="button" class="btn btn-secondary" [disabled]="ibanSaving()" (click)="saveIban()">
+          {{ ibanSaving() ? 'Запазване…' : 'Запази' }}
+        </button>
+      </div>
+      @if (ibanSaved()) {
+        <p class="field-hint" style="margin-top: 8px;">IBAN-ът е запазен.</p>
+      }
+    </div>
+
     <div class="section-title">
       <h3>Апартаменти</h3>
       @if (!formOpen()) {

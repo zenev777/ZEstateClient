@@ -27,4 +27,12 @@ export class PaymentService {
       .get<PaymentHistoryEntry[]>(`${this.baseUrl}/payments`, { params })
       .pipe(catchError(rethrowWithMessage));
   }
+
+  // Any building member paying their own obligation online (Stripe Checkout) -
+  // resolves to a hosted checkout URL to redirect the browser to.
+  createCheckout(obligationId: number): Observable<{ checkoutUrl: string }> {
+    return this.http
+      .post<{ checkoutUrl: string }>(`${this.baseUrl}/payments/checkout/${obligationId}`, {})
+      .pipe(catchError(rethrowWithMessage));
+  }
 }
