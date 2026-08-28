@@ -174,7 +174,7 @@ export class RepairManagement implements OnInit {
   }
 
   allocateCosts(repair: RepairSummary): void {
-    if (!confirm(`Разходите (${repair.actualCost ?? repair.budget} лв.) ще се разпределят пропорционално по идеални части и не могат да се отменят. Продължи?`)) {
+    if (!confirm(`Разходите (${repair.actualCost ?? repair.budget} €) ще се разпределят пропорционално по идеални части и не могат да се отменят. Продължи?`)) {
       return;
     }
 

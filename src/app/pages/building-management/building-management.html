@@ -235,7 +235,7 @@
                 <div class="card-title">Апартамент {{ apartment.number }}</div>
                 <div class="card-meta" style="margin-top: 4px;">Етаж {{ apartment.floor }} &middot; {{ apartment.idealParts | number: '1.0-2' }}% идеални части</div>
               </div>
-              <span class="tag tag-accent">{{ apartment.budget | number: '1.2-2' }} лв.</span>
+              <span class="tag tag-accent">{{ apartment.budget | number: '1.2-2' }} €</span>
             </div>
             <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
               <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(apartment)">Редакция</button>
@@ -292,7 +292,7 @@
                     {{ record.previousOwnerName ?? 'без активен собственик' }} → нов собственик &middot;
                     от {{ record.transferredByName }} &middot;
                     {{ record.debtHandling === 1 ? 'дългът остана за стария' : 'дългът премина към новия' }}
-                    ({{ record.outstandingBalanceAtTransfer | number: '1.2-2' }} лв.)
+                    ({{ record.outstandingBalanceAtTransfer | number: '1.2-2' }} €)
                   </div>
                 }
               }

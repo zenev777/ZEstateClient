@@ -46,17 +46,17 @@
       <div class="stat-grid" style="margin-bottom: var(--space-3);">
         <div class="stat-card">
           <span class="stat-card-label">Приходи</span>
-          <span class="stat-card-value">{{ s.totalIncome | number: '1.2-2' }} лв.</span>
+          <span class="stat-card-value">{{ s.totalIncome | number: '1.2-2' }} €</span>
         </div>
         <div class="stat-card">
           <span class="stat-card-label">Разходи</span>
-          <span class="stat-card-value">{{ s.totalExpense | number: '1.2-2' }} лв.</span>
+          <span class="stat-card-value">{{ s.totalExpense | number: '1.2-2' }} €</span>
         </div>
       </div>
       <div class="card" style="margin-bottom: var(--space-3); text-align: center;">
         <span class="card-meta">Салдо за периода</span>
         <div style="font-size: 24px; font-weight: 700;" [style.color]="s.balance >= 0 ? 'var(--color-success)' : 'var(--color-danger)'">
-          {{ s.balance | number: '1.2-2' }} лв.
+          {{ s.balance | number: '1.2-2' }} €
         </div>
       </div>
 
@@ -69,7 +69,7 @@
                 [style.height.%]="bar.heightPct"
                 [style.background]="bar.positive ? 'var(--color-success)' : 'var(--color-danger)'"
                 style="width: 100%; border-radius: 3px 3px 0 0; min-height: 2px;"
-                [title]="bar.period + ': ' + (bar.balance | number: '1.2-2') + ' лв.'"
+                [title]="bar.period + ': ' + (bar.balance | number: '1.2-2') + ' €'"
               ></div>
             </div>
           }
@@ -89,7 +89,7 @@
         @for (row of s.incomeByApartment; track row.apartmentNumber) {
           <div class="card due-row">
             <span>Апартамент {{ row.apartmentNumber }}</span>
-            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} лв.</span>
+            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} €</span>
           </div>
         }
       </div>
@@ -102,7 +102,7 @@
         @for (row of s.incomeByFeeType; track row.feeType) {
           <div class="card due-row">
             <span>{{ feeTypeLabels[row.feeType] }}</span>
-            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} лв.</span>
+            <span class="due-row-amount">{{ row.total | number: '1.2-2' }} €</span>
           </div>
         }
       </div>
@@ -115,7 +115,7 @@
         @for (row of s.expensesByRepair; track row.id) {
           <div class="card due-row">
             <span>{{ row.title }}</span>
-            <span class="due-row-amount">{{ row.amount | number: '1.2-2' }} лв.</span>
+            <span class="due-row-amount">{{ row.amount | number: '1.2-2' }} €</span>
           </div>
         }
       </div>
