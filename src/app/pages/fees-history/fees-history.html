@@ -18,11 +18,11 @@
     <div class="stat-grid">
       <div class="stat-card" style="background: var(--color-warning-bg); border-color: transparent;">
         <span class="stat-card-label">За плащане</span>
-        <span class="stat-card-value" style="color: var(--color-warning);">{{ dueTotal | number: '1.2-2' }} лв.</span>
+        <span class="stat-card-value" style="color: var(--color-warning);">{{ dueTotal | number: '1.2-2' }} €</span>
       </div>
       <div class="stat-card" style="background: var(--color-success-bg); border-color: transparent;">
         <span class="stat-card-label">Платени (общо)</span>
-        <span class="stat-card-value" style="color: var(--color-success);">{{ paidTotal | number: '1.2-2' }} лв.</span>
+        <span class="stat-card-value" style="color: var(--color-success);">{{ paidTotal | number: '1.2-2' }} €</span>
       </div>
     </div>
 
@@ -74,7 +74,7 @@
                     Чакащо
                   }
                 </span>
-                <span class="history-row-amount">{{ obligation.amount | number: '1.2-2' }} лв.</span>
+                <span class="history-row-amount">{{ obligation.amount | number: '1.2-2' }} €</span>
                 @if (!isPaid(obligation)) {
                   <button
                     type="button"

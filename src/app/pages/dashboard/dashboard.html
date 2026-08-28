@@ -82,7 +82,7 @@
                 </svg>
               </div>
               <span class="stat-card-label">Баланс</span>
-              <span class="stat-card-value">{{ summary.balance | number: '1.2-2' }} лв.</span>
+              <span class="stat-card-value">{{ summary.balance | number: '1.2-2' }} €</span>
             </div>
           </div>
 
@@ -98,7 +98,7 @@
                 <span style="font-weight: 600; font-size: 14.5px;">Приходи този месец</span>
                 <span class="card-meta">от вноски и такси</span>
               </div>
-              <span class="flow-row-value flow-value-positive">+{{ summary.totalIncome | number: '1.2-2' }} лв.</span>
+              <span class="flow-row-value flow-value-positive">+{{ summary.totalIncome | number: '1.2-2' }} €</span>
             </div>
             <div class="card flow-row">
               <div class="icon-circle icon-circle-danger">
@@ -111,7 +111,7 @@
                 <span style="font-weight: 600; font-size: 14.5px;">Разходи този месец</span>
                 <span class="card-meta">ремонти, консумативи</span>
               </div>
-              <span class="flow-row-value flow-value-negative">-{{ summary.totalExpense | number: '1.2-2' }} лв.</span>
+              <span class="flow-row-value flow-value-negative">-{{ summary.totalExpense | number: '1.2-2' }} €</span>
             </div>
           </div>
         }
@@ -140,7 +140,7 @@
                 </div>
               </div>
               <div style="text-align: right;">
-                <div class="due-row-amount">{{ due.amount | number: '1.2-2' }} лв.</div>
+                <div class="due-row-amount">{{ due.amount | number: '1.2-2' }} €</div>
                 @if (isOverdue(due)) {
                   <span class="tag tag-pending" style="font-size: 12px;">Просрочено</span>
                 }
@@ -169,8 +169,8 @@
                 </span>
               </div>
               <span class="card-meta">
-                Бюджет {{ repair.budget | number: '1.2-2' }} лв.
-                @if (repair.actualCost !== null) { · Реален разход {{ repair.actualCost | number: '1.2-2' }} лв. }
+                Бюджет {{ repair.budget | number: '1.2-2' }} €
+                @if (repair.actualCost !== null) { · Реален разход {{ repair.actualCost | number: '1.2-2' }} € }
               </span>
             </div>
           }

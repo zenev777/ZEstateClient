@@ -361,7 +361,7 @@ export class BuildingManagement implements OnInit {
         this.transferFormOpenId.set(null);
         this.transferResultByApartmentId.update((map) => ({
           ...map,
-          [apartment.id]: `Прехвърлен. Неплатени задължения при прехвърлянето: ${result.outstandingBalance.toFixed(2)} лв.`,
+          [apartment.id]: `Прехвърлен. Неплатени задължения при прехвърлянето: ${result.outstandingBalance.toFixed(2)} €`,
         }));
         this.loadApartments();
       },
