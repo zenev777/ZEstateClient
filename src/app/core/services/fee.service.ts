@@ -56,6 +56,14 @@ export class FeeService {
       .pipe(catchError(this.rethrowWithMessage));
   }
 
+  // The caller's own obligations, regardless of role - unlike getObligations() above
+  // this is available to any building member, not just the manager/cashier.
+  getMyObligations(): Observable<ObligationSummary[]> {
+    return this.http
+      .get<ObligationSummary[]>(`${this.baseUrl}/fees/my-obligations`)
+      .pipe(catchError(this.rethrowWithMessage));
+  }
+
   markOverdue(): Observable<{ markedOverdue: number }> {
     return this.http
       .post<{ markedOverdue: number }>(`${this.baseUrl}/fees/mark-overdue`, {})

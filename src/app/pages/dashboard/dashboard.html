@@ -63,122 +63,141 @@
       <h2 style="margin-bottom: 2px;">Здравейте, {{ managerName }}</h2>
       <p class="text-muted" style="margin: 0 0 var(--space-4);">Ето обобщение за вашия вход.</p>
 
-      <div class="section-label">
-        <span>Баланс на входа</span>
-        <a href="javascript:void(0)">История</a>
-      </div>
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div class="icon-box icon-box-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3" y1="21" x2="21" y2="21"></line>
-              <path d="M5 21V9l7-5 7 5v12"></path>
-              <line x1="9" y1="21" x2="9" y2="13"></line>
-              <line x1="15" y1="21" x2="15" y2="13"></line>
-            </svg>
-          </div>
-          <span class="stat-card-label">По банка</span>
-          <span class="stat-card-value">{{ bankBalance | number: '1.2-2' }} лв.</span>
+      @if (canSeeFinancials) {
+        <div class="section-label">
+          <span>Финансов преглед — този месец</span>
+          <a routerLink="/dashboard/reports">Пълен отчет</a>
         </div>
-        <div class="stat-card">
-          <div class="icon-box icon-box-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-              <circle cx="12" cy="12" r="2"></circle>
-            </svg>
+        @if (financialSummaryLoading()) {
+          <p class="text-muted" style="text-align: center; padding: 16px 0;">Зареждане…</p>
+        } @else if (financialSummary(); as summary) {
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="icon-box icon-box-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="3" y1="21" x2="21" y2="21"></line>
+                  <path d="M5 21V9l7-5 7 5v12"></path>
+                  <line x1="9" y1="21" x2="9" y2="13"></line>
+                  <line x1="15" y1="21" x2="15" y2="13"></line>
+                </svg>
+              </div>
+              <span class="stat-card-label">Баланс</span>
+              <span class="stat-card-value">{{ summary.balance | number: '1.2-2' }} лв.</span>
+            </div>
           </div>
-          <span class="stat-card-label">В брой</span>
-          <span class="stat-card-value">{{ cashBalance | number: '1.2-2' }} лв.</span>
-        </div>
-      </div>
 
-      <div class="list-stack" style="margin-top: var(--space-3);">
-        <div class="card flow-row">
-          <div class="icon-circle icon-circle-success">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="7" y1="17" x2="17" y2="7"></line>
-              <polyline points="7 7 17 7 17 17"></polyline>
-            </svg>
+          <div class="list-stack" style="margin-top: var(--space-3);">
+            <div class="card flow-row">
+              <div class="icon-circle icon-circle-success">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </div>
+              <div class="flow-row-body">
+                <span style="font-weight: 600; font-size: 14.5px;">Приходи този месец</span>
+                <span class="card-meta">от вноски и такси</span>
+              </div>
+              <span class="flow-row-value flow-value-positive">+{{ summary.totalIncome | number: '1.2-2' }} лв.</span>
+            </div>
+            <div class="card flow-row">
+              <div class="icon-circle icon-circle-danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="17" y1="7" x2="7" y2="17"></line>
+                  <polyline points="17 17 7 17 7 7"></polyline>
+                </svg>
+              </div>
+              <div class="flow-row-body">
+                <span style="font-weight: 600; font-size: 14.5px;">Разходи този месец</span>
+                <span class="card-meta">ремонти, консумативи</span>
+              </div>
+              <span class="flow-row-value flow-value-negative">-{{ summary.totalExpense | number: '1.2-2' }} лв.</span>
+            </div>
           </div>
-          <div class="flow-row-body">
-            <span style="font-weight: 600; font-size: 14.5px;">Приходи този месец</span>
-            <span class="card-meta">от вноски и такси</span>
-          </div>
-          <span class="flow-row-value flow-value-positive">+{{ monthlyIncome | number: '1.2-2' }} лв.</span>
-        </div>
-        <div class="card flow-row">
-          <div class="icon-circle icon-circle-danger">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="17" y1="7" x2="7" y2="17"></line>
-              <polyline points="17 17 7 17 7 7"></polyline>
-            </svg>
-          </div>
-          <div class="flow-row-body">
-            <span style="font-weight: 600; font-size: 14.5px;">Разходи този месец</span>
-            <span class="card-meta">ремонти, консумативи</span>
-          </div>
-          <span class="flow-row-value flow-value-negative">-{{ monthlyExpense | number: '1.2-2' }} лв.</span>
-        </div>
-      </div>
+        }
+      }
 
       <div class="section-label">
         <span>Вашите вноски</span>
         <a routerLink="/dashboard/fees">Всички</a>
       </div>
-      <div class="list-stack">
-        @for (due of dues; track due.title) {
-          <div class="card due-row">
-            <div>
-              <div style="font-weight: 600; font-size: 14.5px;">{{ due.title }}</div>
-              <div class="due-row-meta">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                {{ due.dueDate }}
+      @if (duesLoading()) {
+        <p class="text-muted" style="text-align: center; padding: 16px 0;">Зареждане…</p>
+      } @else if (dues().length === 0) {
+        <p class="text-muted" style="text-align: center; padding: 16px 0;">Няма неплатени вноски.</p>
+      } @else {
+        <div class="list-stack">
+          @for (due of dues(); track due.id) {
+            <div class="card due-row">
+              <div>
+                <div style="font-weight: 600; font-size: 14.5px;">{{ due.feeTitle }}</div>
+                <div class="due-row-meta">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  @if (due.dueDate) { до {{ due.dueDate | date: 'dd.MM.yyyy' }} } @else { без краен срок }
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div class="due-row-amount">{{ due.amount | number: '1.2-2' }} лв.</div>
+                @if (isOverdue(due)) {
+                  <span class="tag tag-pending" style="font-size: 12px;">Просрочено</span>
+                }
               </div>
             </div>
-            <div style="text-align: right;">
-              <div class="due-row-amount">{{ due.amount | number: '1.2-2' }} лв.</div>
-              <a href="javascript:void(0)" style="font-size: 13px;">Плати</a>
-            </div>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      }
 
-      <div class="section-label">
-        <span>Ремонти</span>
-      </div>
-      <div class="list-stack">
-        @for (repair of repairs; track repair.title) {
-          <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <span style="font-weight: 600; font-size: 14.5px;">{{ repair.title }}</span>
-              <span class="tag" [class.tag-accent]="repair.status === 'InProgress'" [class.tag-neutral]="repair.status === 'Planned'">
-                {{ repairStatusLabel(repair.status) }}
-              </span>
-            </div>
-            <div class="progress"><span [style.width.%]="repair.progress"></span></div>
-            <span class="card-meta">{{ repair.progress }}% завършено</span>
+      @if (isManager) {
+        <div class="section-label">
+          <span>Ремонти</span>
+          <a routerLink="/dashboard/repairs">Всички</a>
+        </div>
+        @if (repairsLoading()) {
+          <p class="text-muted" style="text-align: center; padding: 16px 0;">Зареждане…</p>
+        } @else if (repairs().length === 0) {
+          <p class="text-muted" style="text-align: center; padding: 16px 0;">Няма заведени ремонти.</p>
+        } @else {
+          <div class="list-stack">
+            @for (repair of repairs(); track repair.id) {
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <span style="font-weight: 600; font-size: 14.5px;">{{ repair.title }}</span>
+                  <span class="tag" [class.tag-accent]="repair.status === 1" [class.tag-neutral]="repair.status === 0">
+                    {{ repairStatusLabel(repair.status) }}
+                  </span>
+                </div>
+                <span class="card-meta">
+                  Бюджет {{ repair.budget | number: '1.2-2' }} лв.
+                  @if (repair.actualCost !== null) { · Реален разход {{ repair.actualCost | number: '1.2-2' }} лв. }
+                </span>
+              </div>
+            }
           </div>
         }
-      </div>
+      }
 
       <div class="section-label">
         <span>Предстоящи събрания</span>
         <a routerLink="/dashboard/meetings">Всички</a>
       </div>
-      <div class="list-stack">
-        @for (meeting of meetings; track meeting.title) {
+      @if (upcomingMeetingLoading()) {
+        <p class="text-muted" style="text-align: center; padding: 16px 0;">Зареждане…</p>
+      } @else if (upcomingMeeting(); as meeting) {
+        <div class="list-stack">
           <div class="card due-row">
             <div>
               <div style="font-weight: 600; font-size: 14.5px;">{{ meeting.title }}</div>
-              <div class="due-row-meta">{{ meeting.date }}</div>
+              <div class="due-row-meta">{{ meeting.startDate | date: 'EEE, d MMM. · HH:mm' }}</div>
             </div>
-            <a href="javascript:void(0)" class="btn btn-secondary btn-sm">Детайли</a>
+            <a routerLink="/dashboard/meetings" class="btn btn-secondary btn-sm">Детайли</a>
           </div>
-        }
-      </div>
+        </div>
+      } @else {
+        <p class="text-muted" style="text-align: center; padding: 16px 0;">Няма предстоящи събрания.</p>
+      }
     }
 
     <a routerLink="/dashboard/chat" class="card due-row" style="text-decoration: none; margin-bottom: var(--space-3);">
