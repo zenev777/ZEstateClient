@@ -304,9 +304,13 @@ textarea.input { min-height: 90px; resize: vertical; }
 
 .list-stack { display: flex; flex-direction: column; gap: var(--space-3); }
 
-.due-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.due-row {
+  display: flex; flex-direction: row; flex-wrap: nowrap;
+  align-items: center; justify-content: space-between; gap: var(--space-3);
+}
+.due-row > *:first-child { min-width: 0; }
 .due-row-meta { font-size: 12.5px; color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
-.due-row-amount { font-weight: 700; font-size: 15px; }
+.due-row-amount { font-weight: 700; font-size: 15px; white-space: nowrap; }
 
 .progress { height: 7px; border-radius: var(--radius-full); background: var(--color-icon-bg); overflow: hidden; margin-top: 6px; }
 .progress > span { display: block; height: 100%; background: var(--color-primary); border-radius: var(--radius-full); }
