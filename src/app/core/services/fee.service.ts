@@ -7,6 +7,7 @@ import {
   FeeFormRequest,
   FeeSummary,
   GenerateObligationsResult,
+  ObligationGenerationPreview,
   ObligationSummary,
   ObligationsSummary,
 } from '../models/fee.models';
@@ -36,6 +37,12 @@ export class FeeService {
   deleteFee(id: number): Observable<{ message: string }> {
     return this.http
       .delete<{ message: string }>(`${this.baseUrl}/fees/${id}`)
+      .pipe(catchError(rethrowWithMessage));
+  }
+
+  previewObligations(): Observable<ObligationGenerationPreview> {
+    return this.http
+      .get<ObligationGenerationPreview>(`${this.baseUrl}/fees/generate-obligations/preview`)
       .pipe(catchError(rethrowWithMessage));
   }
 
