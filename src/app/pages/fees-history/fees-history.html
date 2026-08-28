@@ -26,11 +26,7 @@
       </div>
     </div>
 
-    @if (checkoutNotice() === 'success') {
-      <div class="alert alert-success" style="margin-bottom: var(--space-3);">
-        Плащането е прието. Може да отнеме няколко секунди, докато статусът по-долу се обнови.
-      </div>
-    } @else if (checkoutNotice() === 'cancel') {
+    @if (checkoutNotice() === 'cancel') {
       <div class="alert alert-error" style="margin-bottom: var(--space-3);">Плащането беше отказано.</div>
     }
 
