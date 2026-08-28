@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RepairService } from '../../core/services/repair.service';
+import { SessionService } from '../../core/services/session.service';
 import { RepairDocument, RepairSummary } from '../../core/models/repair.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
@@ -18,7 +19,9 @@ export class RepairManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly repairService = inject(RepairService);
+  private readonly session = inject(SessionService);
 
+  readonly isManager = this.session.hasRole('HouseManager');
   readonly statusLabels = REPAIR_STATUS_LABELS;
 
   readonly repairsLoading = signal(true);

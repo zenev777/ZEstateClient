@@ -5,6 +5,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { BuildingService } from '../../core/services/building.service';
 import { FeeService } from '../../core/services/fee.service';
 import { MeetingService } from '../../core/services/meeting.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { ReportService } from '../../core/services/report.service';
 import { RepairService } from '../../core/services/repair.service';
 import { SessionService } from '../../core/services/session.service';
@@ -38,6 +39,7 @@ export class Dashboard implements OnInit {
   private readonly buildingService = inject(BuildingService);
   private readonly feeService = inject(FeeService);
   private readonly meetingService = inject(MeetingService);
+  private readonly paymentService = inject(PaymentService);
   private readonly reportService = inject(ReportService);
   private readonly repairService = inject(RepairService);
   private readonly session = inject(SessionService);
@@ -55,6 +57,7 @@ export class Dashboard implements OnInit {
 
   readonly duesLoading = signal(true);
   readonly dues = signal<ObligationSummary[]>([]);
+  readonly payingId = signal<number | null>(null);
 
   readonly repairsLoading = signal(true);
   readonly repairs = signal<RepairSummary[]>([]);
@@ -169,6 +172,16 @@ export class Dashboard implements OnInit {
 
   isOverdue(due: ObligationSummary): boolean {
     return due.status === OBLIGATION_STATUS_OVERDUE;
+  }
+
+  pay(due: ObligationSummary): void {
+    this.payingId.set(due.id);
+    this.paymentService.createCheckout(due.id).subscribe({
+      next: ({ checkoutUrl }) => {
+        window.location.href = checkoutUrl;
+      },
+      error: () => this.payingId.set(null),
+    });
   }
 
   repairStatusLabel(status: number): string {

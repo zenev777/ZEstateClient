@@ -139,11 +139,19 @@
                   @if (due.dueDate) { до {{ due.dueDate | date: 'dd.MM.yyyy' }} } @else { без краен срок }
                 </div>
               </div>
-              <div style="text-align: right;">
+              <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                <span class="tag" [class.tag-danger]="isOverdue(due)" [class.tag-pending]="!isOverdue(due)" style="font-size: 12px;">
+                  {{ isOverdue(due) ? 'Просрочено' : 'Чакащо' }}
+                </span>
                 <div class="due-row-amount">{{ due.amount | number: '1.2-2' }} €</div>
-                @if (isOverdue(due)) {
-                  <span class="tag tag-pending" style="font-size: 12px;">Просрочено</span>
-                }
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="payingId() === due.id"
+                  (click)="pay(due)"
+                >
+                  {{ payingId() === due.id ? 'Пренасочване…' : 'Плати' }}
+                </button>
               </div>
             </div>
           }

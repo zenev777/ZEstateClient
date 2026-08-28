@@ -17,7 +17,7 @@
 
     <div class="section-title">
       <h3>Ремонти</h3>
-      @if (!formOpen()) {
+      @if (isManager && !formOpen()) {
         <button type="button" class="btn btn-secondary btn-sm" (click)="startCreate()">+ Ремонт</button>
       }
     </div>
@@ -26,7 +26,7 @@
       <div class="alert alert-error" style="margin-bottom: var(--space-3);">{{ repairsError() }}</div>
     }
 
-    @if (formOpen()) {
+    @if (isManager && formOpen()) {
       <div class="card" style="margin-bottom: var(--space-3);">
         @if (formError()) {
           <div class="alert alert-error">{{ formError() }}</div>
@@ -62,7 +62,7 @@
       <div class="list-stack">
         @for (repair of repairs(); track repair.id) {
           <div class="card">
-            @if (editingId() === repair.id) {
+            @if (isManager && editingId() === repair.id) {
               <form [formGroup]="editForm" (ngSubmit)="submitEdit()" novalidate>
                 @if (formError()) {
                   <div class="alert alert-error">{{ formError() }}</div>
@@ -116,9 +116,11 @@
                 </div>
               </div>
               <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(repair)">Редакция</button>
+                @if (isManager) {
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(repair)">Редакция</button>
+                }
                 <button type="button" class="btn btn-secondary btn-sm" (click)="toggleDocuments(repair)">Фактури</button>
-                @if (!repair.costsAllocated && repair.status !== 0) {
+                @if (isManager && !repair.costsAllocated && repair.status !== 0) {
                   <button
                     type="button"
                     class="btn btn-secondary btn-sm"
@@ -128,7 +130,7 @@
                     {{ allocatingId() === repair.id ? 'Разпределяне…' : 'Разпредели разходите' }}
                   </button>
                 }
-                @if (!repair.costsAllocated) {
+                @if (isManager && !repair.costsAllocated) {
                   <button
                     type="button"
                     class="btn btn-secondary btn-sm icon-btn-reject"
@@ -142,16 +144,18 @@
 
               @if (expandedId() === repair.id) {
                 <div class="hr"></div>
-                <div class="field">
-                  <label for="upload{{ repair.id }}">Качи фактура</label>
-                  <input
-                    id="upload{{ repair.id }}"
-                    class="input"
-                    type="file"
-                    [disabled]="uploadingId() === repair.id"
-                    (change)="uploadDocument(repair, $event)"
-                  />
-                </div>
+                @if (isManager) {
+                  <div class="field">
+                    <label for="upload{{ repair.id }}">Качи фактура</label>
+                    <input
+                      id="upload{{ repair.id }}"
+                      class="input"
+                      type="file"
+                      [disabled]="uploadingId() === repair.id"
+                      (change)="uploadDocument(repair, $event)"
+                    />
+                  </div>
+                }
                 @if (documentsFor(repair.id).length === 0) {
                   <p class="text-muted" style="font-size: 13px;">Няма прикачени файлове.</p>
                 } @else {
