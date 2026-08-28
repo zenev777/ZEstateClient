@@ -94,9 +94,16 @@ export class Chat implements OnInit, OnDestroy {
 
     this.sending.set(true);
     this.chatService.sendMessage(text).subscribe({
-      next: () => {
+      next: (sent) => {
         this.sending.set(false);
         this.messageControl.reset('');
+        // Append directly instead of relying solely on the SignalR echo - if the hub
+        // connection silently failed, the sender would otherwise never see their own
+        // message even though it was saved. messageReceived's own dedupe-by-id guard
+        // means this can't double up if the hub delivers the same message afterward.
+        if (!this.messages().some((m) => m.id === sent.id)) {
+          this.messages.update((list) => [...list, sent]);
+        }
       },
       error: (err: Error) => {
         this.sending.set(false);
