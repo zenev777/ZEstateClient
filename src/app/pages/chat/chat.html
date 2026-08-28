@@ -24,27 +24,37 @@
     } @else if (messages().length === 0) {
       <p class="text-muted" style="text-align: center; padding: 24px 0;">Все още няма съобщения. Бъди първи!</p>
     } @else {
-      <div class="list-stack" style="margin-bottom: var(--space-3);">
+      <div class="chat-thread">
         @for (item of messages(); track item.id) {
-          <div class="card" [style.background]="item.senderName === currentUserName ? 'var(--color-icon-bg)' : ''">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
-              <div style="flex: 1;">
-                <div style="font-weight: 600; font-size: 13px;">{{ item.senderName }}</div>
-                <div style="font-size: 14px; margin-top: 2px; white-space: pre-wrap;">{{ item.message }}</div>
-                <div class="card-meta" style="margin-top: 4px;">{{ item.sentAt | date: 'dd.MM.yyyy HH:mm' }}</div>
-              </div>
-              @if (isManager) {
-                <button type="button" class="btn btn-secondary btn-sm icon-btn-reject" (click)="deleteMessage(item)">Изтрий</button>
+          <div class="chat-row" [class.chat-row-mine]="isMine(item)">
+            @if (!isMine(item)) {
+              <div class="chat-avatar">{{ item.senderName.charAt(0) }}</div>
+            }
+            <div class="chat-bubble-col">
+              @if (!isMine(item)) {
+                <div class="chat-sender">
+                  {{ item.senderName }}
+                  @if (item.senderRole) {
+                    <span class="chat-role-tag">{{ roleLabel(item.senderRole) }}</span>
+                  }
+                </div>
               }
+              <div class="chat-bubble">{{ item.message }}</div>
+              <div class="chat-time" [class.chat-time-mine]="isMine(item)">{{ item.sentAt | date: 'HH:mm' }}</div>
             </div>
           </div>
         }
       </div>
     }
 
-    <form [formGroup]="form" (ngSubmit)="send()" novalidate style="display: flex; gap: 8px;">
+    <form [formGroup]="form" (ngSubmit)="send()" novalidate class="chat-composer">
       <input class="input" style="flex: 1;" formControlName="message" placeholder="Напиши съобщение…" />
-      <button type="submit" class="btn btn-primary" [disabled]="sending()">Изпрати</button>
+      <button type="submit" class="btn btn-primary btn-icon" [disabled]="sending()" aria-label="Изпрати">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
     </form>
   </div>
 </div>
