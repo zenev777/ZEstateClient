@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { BuildingService } from '../../core/services/building.service';
+import { CashService } from '../../core/services/cash.service';
 import { FeeService } from '../../core/services/fee.service';
 import { MeetingService } from '../../core/services/meeting.service';
 import { PaymentService } from '../../core/services/payment.service';
@@ -16,6 +17,7 @@ import { ObligationSummary } from '../../core/models/fee.models';
 import { MeetingSummary } from '../../core/models/meeting.models';
 import { FinancialSummary } from '../../core/models/report.models';
 import { RepairSummary } from '../../core/models/repair.models';
+import { CashBalances } from '../../core/models/cash.models';
 
 const OBLIGATION_STATUS_PAID = 2;
 const OBLIGATION_STATUS_OVERDUE = 3;
@@ -37,6 +39,7 @@ function startOfMonth(): string {
 export class Dashboard implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly buildingService = inject(BuildingService);
+  private readonly cashService = inject(CashService);
   private readonly feeService = inject(FeeService);
   private readonly meetingService = inject(MeetingService);
   private readonly paymentService = inject(PaymentService);
@@ -54,6 +57,9 @@ export class Dashboard implements OnInit {
 
   readonly financialSummaryLoading = signal(true);
   readonly financialSummary = signal<FinancialSummary | null>(null);
+
+  readonly cashBalancesLoading = signal(true);
+  readonly cashBalances = signal<CashBalances | null>(null);
 
   readonly duesLoading = signal(true);
   readonly dues = signal<ObligationSummary[]>([]);
@@ -86,6 +92,7 @@ export class Dashboard implements OnInit {
     this.loadRepairs();
     if (this.canSeeFinancials) {
       this.loadFinancialSummary();
+      this.loadCashBalances();
     }
   }
 
@@ -126,6 +133,17 @@ export class Dashboard implements OnInit {
         this.financialSummaryLoading.set(false);
       },
       error: () => this.financialSummaryLoading.set(false),
+    });
+  }
+
+  private loadCashBalances(): void {
+    this.cashBalancesLoading.set(true);
+    this.cashService.getBalances().subscribe({
+      next: (balances) => {
+        this.cashBalances.set(balances);
+        this.cashBalancesLoading.set(false);
+      },
+      error: () => this.cashBalancesLoading.set(false),
     });
   }
 

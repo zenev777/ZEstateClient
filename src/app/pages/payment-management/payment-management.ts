@@ -3,8 +3,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BuildingService } from '../../core/services/building.service';
+import { CashService } from '../../core/services/cash.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { ApartmentSummary } from '../../core/models/auth.models';
+import { CashBalances } from '../../core/models/cash.models';
 import { PaymentHistoryEntry, RegisterPaymentResult } from '../../core/models/payment.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
@@ -21,6 +23,7 @@ export class PaymentManagement implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly buildingService = inject(BuildingService);
+  private readonly cashService = inject(CashService);
   private readonly paymentService = inject(PaymentService);
 
   readonly obligationStatusLabels = OBLIGATION_STATUS_LABELS;
@@ -36,10 +39,23 @@ export class PaymentManagement implements OnInit {
   readonly historyLoading = signal(false);
   readonly history = signal<PaymentHistoryEntry[]>([]);
 
+  readonly balances = signal<CashBalances | null>(null);
+  readonly balancesLoading = signal(true);
+  readonly transferOpen = signal(false);
+  readonly transferSubmitting = signal(false);
+  readonly transferError = signal<string | null>(null);
+
   readonly form = this.fb.nonNullable.group({
     apartmentId: [0, [Validators.required, Validators.min(1)]],
     amount: [0, [Validators.required, Validators.min(0.01)]],
     paidAt: [new Date().toISOString().slice(0, 10), Validators.required],
+    account: ['Cash' as 'Cash' | 'Bank', Validators.required],
+    note: [''],
+  });
+
+  readonly transferForm = this.fb.nonNullable.group({
+    from: ['Cash' as 'Cash' | 'Bank', Validators.required],
+    amount: [0, [Validators.required, Validators.min(0.01)]],
     note: [''],
   });
 
@@ -57,10 +73,53 @@ export class PaymentManagement implements OnInit {
     });
 
     this.loadHistory();
+    this.loadBalances();
   }
 
   back(): void {
     this.router.navigateByUrl('/dashboard');
+  }
+
+  private loadBalances(): void {
+    this.balancesLoading.set(true);
+    this.cashService.getBalances().subscribe({
+      next: (balances) => {
+        this.balances.set(balances);
+        this.balancesLoading.set(false);
+      },
+      error: () => this.balancesLoading.set(false),
+    });
+  }
+
+  toggleTransfer(): void {
+    this.transferOpen.set(!this.transferOpen());
+    this.transferError.set(null);
+    if (this.transferOpen()) {
+      this.transferForm.reset({ from: 'Cash', amount: 0, note: '' });
+    }
+  }
+
+  submitTransfer(): void {
+    if (this.transferForm.invalid) {
+      this.transferForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.transferForm.getRawValue();
+    this.transferSubmitting.set(true);
+    this.transferError.set(null);
+
+    this.cashService.transfer({ from: raw.from, amount: raw.amount, note: raw.note || null }).subscribe({
+      next: () => {
+        this.transferSubmitting.set(false);
+        this.transferOpen.set(false);
+        this.loadBalances();
+      },
+      error: (err: Error) => {
+        this.transferSubmitting.set(false);
+        this.transferError.set(err.message);
+      },
+    });
   }
 
   submit(): void {
@@ -81,6 +140,7 @@ export class PaymentManagement implements OnInit {
         amount: raw.amount,
         paidAt: raw.paidAt,
         method: 'Manual',
+        account: raw.account,
         note: raw.note || null,
       })
       .subscribe({
@@ -89,6 +149,7 @@ export class PaymentManagement implements OnInit {
           this.lastResult.set(result);
           this.form.patchValue({ amount: 0, note: '' });
           this.loadHistory();
+          this.loadBalances();
         },
         error: (err: Error) => {
           this.submitting.set(false);

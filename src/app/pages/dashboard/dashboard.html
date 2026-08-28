@@ -86,6 +86,19 @@
             </div>
           </div>
 
+          @if (!cashBalancesLoading() && cashBalances(); as cash) {
+            <div class="stat-grid" style="margin-top: var(--space-3);">
+              <div class="stat-card" style="background: var(--color-icon-bg); border-color: transparent;">
+                <span class="stat-card-label">В брой</span>
+                <span class="stat-card-value">{{ cash.cashBalance | number: '1.2-2' }} €</span>
+              </div>
+              <div class="stat-card" style="background: var(--color-primary-light); border-color: transparent;">
+                <span class="stat-card-label">По банка</span>
+                <span class="stat-card-value" style="color: var(--color-primary);">{{ cash.bankBalance | number: '1.2-2' }} €</span>
+              </div>
+            </div>
+          }
+
           <div class="list-stack" style="margin-top: var(--space-3);">
             <div class="card flow-row">
               <div class="icon-circle icon-circle-success">
