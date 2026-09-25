@@ -1,5 +1,8 @@
 export interface RegisterPaymentRequest {
   apartmentId: number;
+  // Optional - targets one specific obligation instead of the default FIFO
+  // allocation (oldest-due-first) across the apartment's outstanding ones.
+  obligationId?: number | null;
   amount: number;
   paidAt: string;
   method: 'Manual' | 'Stripe';

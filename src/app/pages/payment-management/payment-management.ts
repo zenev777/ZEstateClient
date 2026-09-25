@@ -1,16 +1,19 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BuildingService } from '../../core/services/building.service';
 import { CashService } from '../../core/services/cash.service';
+import { FeeService } from '../../core/services/fee.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { ApartmentSummary } from '../../core/models/auth.models';
 import { CashBalances } from '../../core/models/cash.models';
+import { ObligationSummary } from '../../core/models/fee.models';
 import { PaymentHistoryEntry, RegisterPaymentResult } from '../../core/models/payment.models';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
 
 const OBLIGATION_STATUS_LABELS = ['Неплатено', 'Частично платено', 'Платено', 'Просрочено'];
+const OBLIGATION_STATUS_PAID = 2;
 const PAYMENT_METHOD_LABELS = ['Ръчно', 'Stripe'];
 
 @Component({
@@ -24,6 +27,7 @@ export class PaymentManagement implements OnInit {
   private readonly router = inject(Router);
   private readonly buildingService = inject(BuildingService);
   private readonly cashService = inject(CashService);
+  private readonly feeService = inject(FeeService);
   private readonly paymentService = inject(PaymentService);
 
   readonly obligationStatusLabels = OBLIGATION_STATUS_LABELS;
@@ -45,13 +49,25 @@ export class PaymentManagement implements OnInit {
   readonly transferSubmitting = signal(false);
   readonly transferError = signal<string | null>(null);
 
+  readonly obligations = signal<ObligationSummary[]>([]);
+
   readonly form = this.fb.nonNullable.group({
     apartmentId: [0, [Validators.required, Validators.min(1)]],
+    obligationId: [0],
     amount: [0, [Validators.required, Validators.min(0.01)]],
     paidAt: [new Date().toISOString().slice(0, 10), Validators.required],
     account: ['Cash' as 'Cash' | 'Bank', Validators.required],
     note: [''],
   });
+
+  // Unpaid obligations of the apartment currently selected in the form - lets the
+  // cashier target one specific obligation instead of the default oldest-first split.
+  readonly apartmentObligations = computed(() => {
+    const apartmentId = this.selectedApartmentId();
+    return this.obligations().filter((o) => o.apartmentId === apartmentId && o.status !== OBLIGATION_STATUS_PAID);
+  });
+
+  private readonly selectedApartmentId = signal(0);
 
   readonly transferForm = this.fb.nonNullable.group({
     from: ['Cash' as 'Cash' | 'Bank', Validators.required],
@@ -72,12 +88,30 @@ export class PaymentManagement implements OnInit {
       error: () => this.apartmentsLoading.set(false),
     });
 
+    this.feeService.getObligations().subscribe({
+      next: (obligations) => this.obligations.set(obligations),
+      error: () => this.obligations.set([]),
+    });
+
     this.loadHistory();
     this.loadBalances();
   }
 
   back(): void {
     this.router.navigateByUrl('/dashboard');
+  }
+
+  onApartmentChange(): void {
+    this.selectedApartmentId.set(Number(this.form.controls.apartmentId.value));
+    this.form.controls.obligationId.setValue(0);
+  }
+
+  onObligationChange(): void {
+    const obligationId = Number(this.form.controls.obligationId.value);
+    const obligation = this.apartmentObligations().find((o) => o.id === obligationId);
+    if (obligation) {
+      this.form.controls.amount.setValue(obligation.remaining);
+    }
   }
 
   private loadBalances(): void {
@@ -137,6 +171,7 @@ export class PaymentManagement implements OnInit {
     this.paymentService
       .registerPayment({
         apartmentId: raw.apartmentId,
+        obligationId: raw.obligationId > 0 ? raw.obligationId : null,
         amount: raw.amount,
         paidAt: raw.paidAt,
         method: 'Manual',
@@ -147,9 +182,10 @@ export class PaymentManagement implements OnInit {
         next: (result) => {
           this.submitting.set(false);
           this.lastResult.set(result);
-          this.form.patchValue({ amount: 0, note: '' });
+          this.form.patchValue({ amount: 0, note: '', obligationId: 0 });
           this.loadHistory();
           this.loadBalances();
+          this.feeService.getObligations().subscribe((obligations) => this.obligations.set(obligations));
         },
         error: (err: Error) => {
           this.submitting.set(false);

@@ -1,6 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { FeeService } from '../../core/services/fee.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { BottomNav } from '../../shared/bottom-nav/bottom-nav';
@@ -17,6 +18,7 @@ const OBLIGATION_STATUS_PAID = 2;
 export class FeesHistory implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly authService = inject(AuthService);
   private readonly feeService = inject(FeeService);
   private readonly paymentService = inject(PaymentService);
 
@@ -25,11 +27,12 @@ export class FeesHistory implements OnInit {
   readonly obligations = signal<ObligationSummary[]>([]);
   readonly payingId = signal<number | null>(null);
   readonly checkoutNotice = signal<'success' | 'cancel' | null>(null);
+  readonly creditBalance = signal(0);
 
   get dueTotal(): number {
     return this.obligations()
       .filter((o) => o.status !== OBLIGATION_STATUS_PAID)
-      .reduce((sum, o) => sum + o.amount, 0);
+      .reduce((sum, o) => sum + o.remaining, 0);
   }
 
   get paidTotal(): number {
@@ -49,6 +52,11 @@ export class FeesHistory implements OnInit {
     }
 
     this.load();
+
+    this.authService.me().subscribe({
+      next: (me) => this.creditBalance.set(me.apartmentCredit ?? 0),
+      error: () => this.creditBalance.set(0),
+    });
   }
 
   load(): void {
