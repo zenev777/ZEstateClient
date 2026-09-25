@@ -134,4 +134,6 @@ export interface MeResponse {
   apartmentNumber?: string | null;
   canRetry?: boolean;
   rejectionReason?: string | null;
+  // Credit accumulated from overpayment (Apartment.Budget) - only set once membership is approved.
+  apartmentCredit?: number | null;
 }

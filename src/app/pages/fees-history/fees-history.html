@@ -26,6 +26,12 @@
       </div>
     </div>
 
+    @if (creditBalance() > 0) {
+      <div class="alert" style="margin-bottom: var(--space-3); background: var(--color-success-bg); color: var(--color-success);">
+        Имаш кредит {{ creditBalance() | number: '1.2-2' }} € от предишно надплащане. Свържи се с домоуправителя за приспадането му.
+      </div>
+    }
+
     @if (checkoutNotice() === 'cancel') {
       <div class="alert alert-error" style="margin-bottom: var(--space-3);">Плащането беше отказано.</div>
     }
@@ -70,7 +76,12 @@
                     Чакащо
                   }
                 </span>
-                <span class="history-row-amount">{{ obligation.amount | number: '1.2-2' }} €</span>
+                <span class="history-row-amount">
+                  {{ (isPaid(obligation) ? obligation.amount : obligation.remaining) | number: '1.2-2' }} €
+                  @if (!isPaid(obligation) && obligation.amountPaid > 0) {
+                    <span class="text-muted" style="font-size: 11px; display: block;">от {{ obligation.amount | number: '1.2-2' }} €</span>
+                  }
+                </span>
                 @if (!isPaid(obligation)) {
                   <button
                     type="button"

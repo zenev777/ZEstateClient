@@ -29,9 +29,14 @@ export interface FeeFormRequest {
 
 export interface ObligationSummary {
   id: number;
+  apartmentId: number;
   apartmentNumber: string;
   feeTitle: string;
   amount: number;
+  // Already-paid amount and what's left to pay - amount alone overstates the due
+  // amount once an obligation is partially paid.
+  amountPaid: number;
+  remaining: number;
   status: number;
   period: string | null;
   dueDate: string | null;
